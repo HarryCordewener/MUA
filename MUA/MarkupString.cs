@@ -105,24 +105,31 @@ namespace MUA
                     node.stringWeight.Sum();
         }
 
+        /// <summary>
+        /// The InsertString will put iString into the position in the MarkupString structure.
+        /// </summary>
+        /// <remarks>
+        ///       5                         5                    6             String Weights
+        /// [  A   B   C   D  E  ] [  F  G  H  I  J  ] [  K  L  M  N  O  P  ]  String Arrays
+        ///    0   1   2   3  4       5  6  7  8  9      10 11 12 13 14 15     String Positions
+        ///  0  1   2   3   4  5    5  6  7  8  9  10   10 11 12 13 14 15 16   Insert Positions
+        ///
+        /// Insert at position: 12
+        ///    12 - 5 = 7                 7 - 5 = 2            2 - 6 = -4 (target is here)         
+        ///
+        /// Insert at position: 5
+        ///    5 - 5 = 0
+        /// 
+        /// What is the standard for handling this case? OPTIONS:
+        /// (O) Should it create a seperate String/Markup unit in between the two. This would be like 'appending' or 'prepending'
+        /// (X) Should it append directly /into/ the end of the first string? (Inheriting a Markup rule)
+        /// (X) Should it prepend direction /into/ the beginning of the next string. (Inhereting a Markup rule)
+        /// </remarks>
+        /// <param name="position">The position into which to insert. See remarks for insertion logic.</param>
+        /// <param name="iString">The string to insert.</param>
+        /// <returns>The markupstring itself.</returns>
         public MarkupString InsertString(int position, string iString)
         {
-
-            //       5                         5                    6             String Weights
-            // [  A   B   C   D  E  ] [  F  G  H  I  J  ] [  K  L  M  N  O  P  ]  String Arrays
-            //    0   1   2   3  4       5  6  7  8  9      10 11 12 13 14 15     String Positions
-            //  0  1   2   3   4  5    5  6  7  8  9  10   10 11 12 13 14 15 16   Insert Positions
-
-            // Insert at position: 12
-            //    12 - 5 = 7                 7 - 5 = 2            2 - 6 = -4 (target is here)         
-
-            // Insert at position: 5
-            //    5 - 5 = 0
-            // 
-            // What is the standard for handling this case? OPTIONS:
-            // (O) Should it create a seperate String/Markup unit in between the two. This would be like 'appending' or 'prepending'
-            // (X) Should it append directly /into/ the end of the first string? (Inheriting a Markup rule)
-            // (X) Should it prepend direction /into/ the beginning of the next string. (Inhereting a Markup rule)
 
             if (!IsString())
             {
@@ -159,6 +166,34 @@ namespace MUA
             return this;
         }
 
+        public MarkupString DeleteString(int losition, int length)
+        {
+
+            //foreach (var item in myList)
+            //{
+            //    if (argLen <= 0)
+            //        break;
+
+            //    if (item.Length > argPos) // We are now guaranteed the position is in here.
+            //    {
+            //        var maxCut = item.Length - argPos;
+            //        var curCut = (maxCut < argLen ? maxCut : argLen);
+            //        item.Remove(argPos, curCut);
+            //        argLen -= curCut;
+            //        argPos = 0;
+            //    }
+            //    else
+            //    {
+            //        argPos -= item.Length;
+            //    }
+            //}
+            return this;
+        }
+
+        /// <summary>
+        /// A simple function that returns whether or not this is a String node. The inverse is this being a Markup node.
+        /// </summary>
+        /// <returns>Whether this is a string or not.</returns>
         private bool IsString()
         {
             return markupString != null;
