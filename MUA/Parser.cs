@@ -99,12 +99,12 @@ namespace MUA
         /// However, since Regex.Match doesn't LIKE using StringBuilder, and a ToString() would likely take ages...</para>
         /// <para>Needs to be changed to use MarkupString instead of String!</para>
         /// </remarks>
-        /// <param name="startPosition">Starting position of the full <see cref="mystring"/> ref where we begin evaluation.</param>
+        /// <param name="startPosition">Starting position of the full 'mystring' ref where we begin evaluation.</param>
         /// <param name="mystring">The string reference to edit as we run through the parse-sequence.</param>
         /// <param name="haltexpression">Where we halt and return to our previous caller.</param>
-        /// <param name="closure">Forcefully add a closure for security purposes. This defines the required closing character of the <see cref="haltexpression"/>.</param>
+        /// <param name="closure">Forcefully add a closure for security purposes. This defines the required closing character of the 'haltexpression'.</param>
         /// <param name="evaluate">Whether or not we evaluate the string we parse. <remarks>Not Yet Implemented.</remarks></param>
-        /// <returns>Returns the integer representation of how many characters we've 'changed' of the <see cref="mystring"/>.</returns>
+        /// <returns>Returns the integer representation of how many characters we've 'changed' of the 'mystring'.</returns>
         private int Parse(int startPosition, ref StringBuilder mystring, ref Regex haltexpression, char closure = '\0', bool evaluate = true)
         {
             var readerPosition = startPosition;
@@ -166,7 +166,7 @@ namespace MUA
         /// <summary>
         /// The parse-handler for [...] expressions found. This is used to initiate a new parse-run and allow a function call further down a string.
         /// </summary>
-        /// <param name="readerPosition">Where we start reading in the <see cref="mystring"/>.</param>
+        /// <param name="readerPosition">Where we start reading in the 'mystring'.</param>
         /// <param name="mystring">The string we are evaluating.</param>
         /// <returns>How many characters were added/changed forwards from the starting position. Aka, how much should the next call skip.</returns>
         private int SquareParse(int readerPosition, ref StringBuilder mystring)
@@ -184,7 +184,7 @@ namespace MUA
         /// The parse-handler for {...} expressions found. This is used to initiate a new parse-run and ignore commas.
         /// <remarks>This may need edits to not allow a new Function Call!</remarks>
         /// </summary>
-        /// <param name="readerPosition">Where we start reading in the <see cref="mystring"/>.</param>
+        /// <param name="readerPosition">Where we start reading in the 'mystring'.</param>
         /// <param name="mystring">The string we are evaluating.</param>
         /// <returns>How many characters were added/changed forwards from the starting position. Aka, how much should the next call skip.</returns>
         private int CurlyParse(int readerPosition, ref StringBuilder mystring)
@@ -199,7 +199,7 @@ namespace MUA
         /// <summary>
         /// The parse-handler for \. expressions found. This is to handle escape sequences.
         /// </summary>
-        /// <param name="readerPosition">Where we start reading in the <see cref="mystring"/>.</param>
+        /// <param name="readerPosition">Where we start reading in the 'mystring'.</param>
         /// <param name="mystring">The string we are evaluating.</param>
         /// <returns>How many characters were added/changed forwards from the starting position. Aka, how much should the next call skip.</returns>
         private int EscapeParse(int readerPosition, ref StringBuilder mystring)
@@ -211,7 +211,7 @@ namespace MUA
         /// <summary>
         /// The parse-handler for %. and &lt;...&gt; expressions found. This is to handle percent-expression sequences.
         /// </summary>
-        /// <param name="readerPosition">Where we start reading in the <see cref="mystring"/>.</param>
+        /// <param name="readerPosition">Where we start reading in the 'mystring'.</param>
         /// <param name="mystring">The string we are evaluating.</param>
         /// <returns>How many characters were added/changed forwards from the starting position. Aka, how much should the next call skip.</returns>
         private int PercentParse(int readerPosition, ref StringBuilder mystring)
@@ -238,7 +238,7 @@ namespace MUA
         /// <summary>
         /// The parse-handler for Functions. This is to handle function(...,...) calls as well as the tuple calls.
         /// </summary>
-        /// <param name="readerPosition">Where we start reading in the <see cref="mystring"/>.</param>
+        /// <param name="readerPosition">Where we start reading in the 'mystring'.</param>
         /// <param name="mystring">The string we are evaluating.</param>
         /// <param name="functionName">The string that expresses the function call's name.</param>
         /// <remarks>

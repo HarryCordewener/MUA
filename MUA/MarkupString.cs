@@ -85,10 +85,10 @@ namespace MUA
             var newMarkupString = new MarkupString();
 
             newMarkupString.beneathList.Add(left);
-            newMarkupString.stringWeight.Add(Weight(ref left));
+            newMarkupString.stringWeight.Add(left.Weight());
 
             newMarkupString.beneathList.Add(right);
-            newMarkupString.stringWeight.Add(Weight(ref right));
+            newMarkupString.stringWeight.Add(right.Weight());
 
             return newMarkupString;
         }
@@ -96,14 +96,14 @@ namespace MUA
         /// <summary>
         /// Evaluates the weight of the node, by checking either the length of the string, or the items beneath it.
         /// </summary>
-        /// <param name="node">The node to inspect.</param>
         /// <returns>An integer representation of how many characters are beneath this node.</returns>
-        private int Weight(ref MarkupString node)
+        private int Weight()
         {
-            return node.stringWeight == null ?
-                    node.markupString.Length :
-                    node.stringWeight.Sum();
+            return stringWeight == null ?
+                    markupString.Length :
+                    stringWeight.Sum();
         }
+
 
         /// <summary>
         /// The InsertString will put iString into the position in the MarkupString structure.
@@ -166,27 +166,52 @@ namespace MUA
             return this;
         }
 
-        public MarkupString DeleteString(int losition, int length)
+        /// <summary>
+        /// Deletes a string and potential markup from the MarkupString, based on character position and length.
+        /// </summary>
+        /// <param name="location">The array-location for the first character to remove from the current MarkupString Node.</param>
+        /// <param name="length">The amount of characters to delete, starting at the first character in this MarkupString Node.</param>
+        /// <returns>Itself.</returns>
+        public MarkupString DeleteString(int location, int length)
         {
+            if (IsString())
+            {
+                markupString.Remove(location, length);
+            }
+            else
+            {
+                foreach (var markupStringItem in beneathList)
+                {
+                    // We do this, because keeping a count will get corrupted by deletions.
+                    var index = beneathList.IndexOf(markupStringItem);
 
-            //foreach (var item in myList)
-            //{
-            //    if (argLen <= 0)
-            //        break;
+                    // We're done if we have nothing else to delete.
+                    if (length <= 0) break;
 
-            //    if (item.Length > argPos) // We are now guaranteed the position is in here.
-            //    {
-            //        var maxCut = item.Length - argPos;
-            //        var curCut = (maxCut < argLen ? maxCut : argLen);
-            //        item.Remove(argPos, curCut);
-            //        argLen -= curCut;
-            //        argPos = 0;
-            //    }
-            //    else
-            //    {
-            //        argPos -= item.Length;
-            //    }
-            //}
+                    // If the weight is less than the location, or equal to, this is not where we want to delete.
+                    // So reduce the relative-location and try again.
+                    if (markupStringItem.Weight() <= location)
+                    {
+                        location -= markupStringItem.Weight();
+                        continue;
+                    }
+
+                    var maxCut = markupStringItem.Weight() - location;
+                    var curCut = (maxCut < length ? maxCut : length);
+
+                    markupStringItem.DeleteString(location, curCut);
+                    // Should this be done with a evalWeight() function or similar?
+                    stringWeight[index] = markupStringItem.Weight();
+                    length -= curCut;
+                    location = 0;
+
+                    if (markupStringItem.Weight() != 0) continue;
+
+                    // If this item is empty now, delete it. We no longer need it.
+                    beneathList.RemoveAt(index);
+                    stringWeight.RemoveAt(index);
+                }
+            }
             return this;
         }
 
