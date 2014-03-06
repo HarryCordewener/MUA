@@ -2,6 +2,7 @@
 // <copyright file="Parser.cs" company="Twilight Days">
 // ...
 // </copyright>
+// <author>Harry Cordewener</author>
 //-----------------------------------------------------------------------
 
 using System.Globalization;
@@ -221,6 +222,7 @@ namespace MUA
             switch (mystring[++readerPosition])
             {
                 case '<':
+                    // We may want to make a <...> parse function, for the sake of both FunctionTuples and PercentParse.
                     percentLen = Parse(readerPosition, ref mystring, ref specialCharLtEndHalt, '>') + 1;
                     break;
                 default:

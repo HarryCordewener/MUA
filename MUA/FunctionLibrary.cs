@@ -2,6 +2,7 @@
 // <copyright file="FunctionLibrary.cs" company="Twilight Days">
 // ...
 // </copyright>
+// <author>Harry Cordewener</author>
 //-----------------------------------------------------------------------
 
 namespace MUA

@@ -32,12 +32,12 @@ namespace MUA
         /// How long is the string beneath me? (How many character elements)
         /// We make use of this to rapidly find positions.
         /// </summary>
-        private readonly List<int> stringWeight;
+        private List<int> stringWeight;
 
         /// <summary>
         /// The MarkupString on the left. Null if none exists.
         /// </summary>
-        private readonly List<MarkupString> beneathList;
+        private List<MarkupString> beneathList;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MarkupString"/> class. 
@@ -47,7 +47,7 @@ namespace MUA
         {
             beneathList = new List<MarkupString>();
             stringWeight = new List<int>();
-            MyMarkup = new Markup();
+            MyMarkup = new Markup(null);
         }
 
         /// <summary>
@@ -130,7 +130,6 @@ namespace MUA
         /// <returns>The markupstring itself.</returns>
         public MarkupString InsertString(int position, string iString)
         {
-
             if (!IsString())
             {
                 var targetPosition = position;
@@ -147,10 +146,14 @@ namespace MUA
                     beneathList.Insert(passedWeights, new MarkupString(iString));
                     stringWeight.Insert(passedWeights, iString.Length);
                 }
-                
-                // Implied else.
-                beneathList[passedWeights].InsertString(targetPosition, iString);
-                stringWeight[passedWeights] += iString.Length;
+                else
+                {
+                    // This is the adjustment for the 'last step reduction' error.
+                    targetPosition += stringWeight[passedWeights];
+
+                    beneathList[passedWeights].InsertString(targetPosition, iString);
+                    stringWeight[passedWeights] += iString.Length;
+                }
             }
             else
             {
@@ -162,7 +165,77 @@ namespace MUA
                 // >> +012-3456
                 markupString = markupString.Insert(position, iString);
             }
+            return this;
+        }
 
+        /// <summary>
+        /// The InsertString will put mString into the position in the MarkupString structure.
+        /// To do this, it may split up a string beneath it. After all, the node is expected to be Marked Up.
+        /// </summary>
+        /// <param name="position">The position into which to insert. See remarks for insertion logic.</param>
+        /// <param name="mString">The MarkupString to insert.</param>
+        /// <returns>The markupstring itself.</returns>
+        public MarkupString InsertString(int position, MarkupString mString)
+        {
+            if (IsString())
+            {
+                beneathList = new List<MarkupString>();
+                stringWeight = new List<int>();
+                MyMarkup = new Markup(null); // Blank Markup Transition
+
+                var rightside = markupString.ToString().Substring(position);
+                var leftside = markupString.ToString().Substring(0, markupString.Length - rightside.Length);
+
+                beneathList.Insert(0, new MarkupString(leftside));
+                beneathList.Insert(1, mString);
+                beneathList.Insert(2, new MarkupString(rightside));
+
+                markupString = null;
+
+                stringWeight.Insert(0, beneathList[0].Weight());
+                stringWeight.Insert(1, beneathList[1].Weight());
+                stringWeight.Insert(2, beneathList[2].Weight());
+            }
+            else
+            {
+                var targetPosition = position;
+                // We need to find the way this string is now 'split', and leave the 'remainder' up to another call of InsertString.
+                var passedWeights = stringWeight.TakeWhile(val => (targetPosition -= val) >= 0).Count();
+                // Warning: here, a position of 3 generates a targetPosition of -5 after noticing a weight 8. The position it needs to
+                // go into is 3. But had it passed over a weight of 2, the targetposition would be '1' for the /next/ unit. Which is correct.
+                // But if that had a weight of 4, it'd end up being 1-4 = -3. We need to re-add the last step, on which the evaluation failed.
+
+                if (targetPosition == 0)
+                {
+                    // We must place it 'between', at the beginning, or at the 'end' of a beneathList.
+                    // We know how many elements in we should be... so:
+                    // If count is at 0, it's an insert.
+                    // If count is equal to stringWeight.Count, append at end.
+                    // Otherwise, pass the new targetPosition to insert into the String.
+                    beneathList.Insert(passedWeights, mString);
+                    stringWeight.Insert(passedWeights, mString.Weight());
+                }
+                else
+                {
+                    // This is the adjustment for the 'last step reduction' error.
+                    targetPosition += stringWeight[passedWeights];
+
+                    beneathList[passedWeights].InsertString(targetPosition, mString);
+                    stringWeight[passedWeights] += mString.Weight();
+
+                    if (!beneathList[passedWeights].MyMarkup.IsOnlyInherit()) return this;
+
+                    // If the below is now an empty (OnlyInherit) Markup, we can 'pull it up'.
+                    // That is to say, we can put its individual beneathLists in the position where we had our old one.
+                    // If the item below is not an empty (OnlyInherit) Markup, then it wasn't the item below that we did
+                    // the final insert into.
+                    var reference = beneathList[passedWeights];
+                    beneathList.RemoveAt(passedWeights);
+                    stringWeight.RemoveAt(passedWeights);
+                    beneathList.InsertRange(passedWeights, reference.beneathList);
+                    stringWeight.InsertRange(passedWeights, reference.stringWeight);
+                }
+            }
             return this;
         }
 
@@ -174,12 +247,14 @@ namespace MUA
         /// <returns>Itself.</returns>
         public MarkupString DeleteString(int location, int length)
         {
+            var deletionIndexes = new List<int>();
             if (IsString())
             {
                 markupString.Remove(location, length);
             }
             else
             {
+                // We can't do this in parallel. Must be done in-order.
                 foreach (var markupStringItem in beneathList)
                 {
                     // We do this, because keeping a count will get corrupted by deletions.
@@ -208,6 +283,16 @@ namespace MUA
                     if (markupStringItem.Weight() != 0) continue;
 
                     // If this item is empty now, delete it. We no longer need it.
+                    deletionIndexes.Add(index);
+                }
+
+                // We must reverse them. Because if we do it the wrong way around, we will be at the
+                // wrong index after the first Removal.
+                deletionIndexes.Reverse();
+
+                // Begone! Evil empty nodes! You serve no purpose!
+                foreach (var index in deletionIndexes)
+                {
                     beneathList.RemoveAt(index);
                     stringWeight.RemoveAt(index);
                 }
@@ -222,6 +307,26 @@ namespace MUA
         private bool IsString()
         {
             return markupString != null;
+        }
+
+        /// <summary>
+        /// Returns the String representation of the MarkupString
+        /// </summary>
+        /// <returns>A string.</returns>
+        public override string ToString()
+        {
+            if (IsString()) return markupString.ToString();
+
+            var result = new StringBuilder();
+            result.Append("<" + MyMarkup + ">");
+
+            foreach (MarkupString each in beneathList)
+            {
+                result.Append(each);
+            }
+
+            result.Append("</" + MyMarkup + ">");
+            return result.ToString();
         }
     }
 }
