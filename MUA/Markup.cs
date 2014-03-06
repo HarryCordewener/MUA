@@ -72,11 +72,12 @@ namespace MUA
         }
 
         /// <summary>
-        /// This function mixes a range of Markups (most likely inherited) and gives the resulting Markup object.
+        /// This function mixes a Markup Object, assuming this object is the child (new addition) and the argument is the parent.
+        /// It returns a resulting Markup object.
         /// </summary>
-        /// <param name="markupList">The list of Markup objects to mix.</param>
+        /// <param name="markupList">The Markup object we inherit from.</param>
         /// <returns>The resulting Markup object.</returns>
-        public Markup Mix(ref List<Markup> markupList)
+        public Markup Mix(Markup markupList)
         {
             throw new NotImplementedException();
         }

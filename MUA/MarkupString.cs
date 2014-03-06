@@ -169,6 +169,18 @@ namespace MUA
         }
 
         /// <summary>
+        /// Appends a MarkupString to the end of current instance of MarkupString.
+        /// </summary>
+        /// <param name="mString">The MarkupString being added to this instance.</param>
+        /// <returns>Itself.</returns>
+        public MarkupString Append(MarkupString mString)
+        {
+            beneathList.Add(mString);
+            stringWeight.Add(mString.Weight());
+            return this;
+        }
+
+        /// <summary>
         /// The InsertString will put mString into the position in the MarkupString structure.
         /// To do this, it may split up a string beneath it. After all, the node is expected to be Marked Up.
         /// </summary>
@@ -240,7 +252,7 @@ namespace MUA
         }
 
         /// <summary>
-        /// Deletes a string and potential markup from the MarkupString, based on character position and length.
+        /// Deletes a string and potential markup from the MarkupString, based on character position (starting at 0) and length.
         /// </summary>
         /// <param name="location">The array-location for the first character to remove from the current MarkupString Node.</param>
         /// <param name="length">The amount of characters to delete, starting at the first character in this MarkupString Node.</param>
@@ -310,7 +322,7 @@ namespace MUA
         }
 
         /// <summary>
-        /// Returns the String representation of the MarkupString
+        /// Returns the String representation of the MarkupString. This visits all of its children.
         /// </summary>
         /// <returns>A string.</returns>
         public override string ToString()
@@ -327,6 +339,48 @@ namespace MUA
 
             result.Append("</" + MyMarkup + ">");
             return result.ToString();
+        }
+
+        /// <summary>
+        /// A very basic surface level ToString. This only evaluates the String representation of the current item, 
+        /// and none of its children.
+        /// </summary>
+        /// <returns>A string representation of this MarkupString element only.</returns>
+        public string ToSurfaceString()
+        {
+            if (IsString()) return markupString.ToString();
+            return MyMarkup.ToString();
+        }
+
+        /// <summary>
+        /// Implementation of flattening the MarkupString. This is meant to create an equivalent MarkupString List.
+        /// <remarks>
+        /// This should call Mix as we move down, and then when we hit text, create the new MarkupString representation
+        /// of that string, with a parent that holds this new Mixed Markup.
+        /// </remarks>
+        /// </summary>
+        /// <param name="markupStringList">A reference to a markupStringList that you wish to put things into.</param>
+        public void FlattenInto(ref List<MarkupString> markupStringList)
+        {
+            var myMarkup = new Markup(null);
+            FlattenInto(ref markupStringList, MyMarkup.Mix(myMarkup));
+        }
+
+        private void FlattenInto(ref List<MarkupString> markupStringList, Markup mup)
+        {
+            if (!IsString())
+            {
+                foreach (var each in beneathList)
+                {
+                    each.FlattenInto(ref markupStringList, MyMarkup.Mix(mup));
+                }
+            }
+            else
+            {
+                var myMarkupParent = new MarkupString(mup);
+                myMarkupParent.InsertString(0, markupString.ToString());
+                markupStringList.Add(myMarkupParent);
+            }
         }
     }
 }

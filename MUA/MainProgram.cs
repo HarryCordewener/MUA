@@ -6,6 +6,7 @@
 //-----------------------------------------------------------------------
 
 using System.Collections.Generic;
+using System.Text;
 
 namespace MUA
 {
@@ -35,9 +36,22 @@ namespace MUA
             root.InsertString(0, "Omnomnom");
             root.InsertString(4, test);
             Console.WriteLine(root.ToString());
+            root.DeleteString(3, 4);
+            Console.WriteLine(root.ToString());
 
+            var test2 = new List<MarkupString>();
+            root.FlattenInto(ref test2);
+
+            var sb2 = new StringBuilder();
+            
+            foreach (var each in test2)
+            {
+                sb2.Append(each.ToSurfaceString());
+            }
+            Console.WriteLine(sb2.ToString());
             Console.Read();
             Console.Read();
+
 
             return 0;
         }
