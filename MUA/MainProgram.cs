@@ -29,7 +29,7 @@ namespace MUA
             Console.Read();
 
             const MarkupRule mar1 = MarkupRule.HiLight;
-            var mar1L = new List<MarkupRule> {mar1};
+            var mar1L = new HashSet<MarkupRule> {mar1};
             var root = new MarkupString();
             var test = new MarkupString(new Markup(mar1L));
             test.InsertString(0,"DOOD");
@@ -46,7 +46,7 @@ namespace MUA
             
             foreach (var each in test2)
             {
-                sb2.Append(each.ToSurfaceString());
+                sb2.Append(each);
             }
             Console.WriteLine(sb2.ToString());
             Console.Read();

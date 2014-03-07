@@ -5,6 +5,7 @@
 // <author>Harry Cordewener</author>
 //-----------------------------------------------------------------------
 
+using System.Linq;
 using System.Text;
 
 namespace MUA
@@ -55,17 +56,17 @@ namespace MUA
         /// <summary>
         /// Contains the markup as a string. <remarks>(TMP TEST VERSION)</remarks>
         /// </summary>
-        public List<MarkupRule> MyMarkup;
+        public HashSet<MarkupRule> MyMarkup;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Markup"/> class.
         /// </summary>
         /// <param name="myMarkup">An optional string representation of the markup. <remarks>(TMP TEST VERSION)</remarks></param>
-        public Markup(List<MarkupRule> myMarkup)
+        public Markup(HashSet<MarkupRule> myMarkup)
         {
             if (myMarkup == null)
             {
-                MyMarkup = new List<MarkupRule> { MarkupRule.OnlyInherit };
+                MyMarkup = new HashSet<MarkupRule> { MarkupRule.OnlyInherit };
                 return;
             }
             MyMarkup = myMarkup;
@@ -79,7 +80,10 @@ namespace MUA
         /// <returns>The resulting Markup object.</returns>
         public Markup Mix(Markup markupList)
         {
-            throw new NotImplementedException();
+            var result = new Markup(markupList.MyMarkup);
+            result.MyMarkup.UnionWith(MyMarkup);
+
+            return result;
         }
 
         /// <summary>
