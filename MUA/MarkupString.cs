@@ -5,6 +5,7 @@
 // <author>Harry Cordewener</author>
 //-----------------------------------------------------------------------
 
+using System;
 using System.Text;
 
 namespace MUA
@@ -77,12 +78,24 @@ namespace MUA
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MarkupString"/> Copied from the object given.
+        /// Initializes a new instance of the <see cref="MarkupString"/>, copied from the object given.
         /// </summary>
         /// <param name="copyFrom">The MarkupString node to assumed to be root - and copy from.</param>
         public MarkupString(MarkupString copyFrom)
         {
             copyFrom.CopyInto(this);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MarkupString"/>, copied from the object given, based on
+        /// position and length. This is also known as the Substring copy constructor.
+        /// </summary>
+        /// <param name="copyFrom">The MarkupString node to assumed to be root - and copy from.</param>
+        /// <param name="position">What character position (0 based) to start the copy from.</param>
+        /// <param name="length">How many characters to copy.</param>
+        public MarkupString(MarkupString copyFrom, int position, int length)
+        {
+            
         }
 
         /// <summary>       
@@ -393,6 +406,18 @@ namespace MUA
                 myMarkupParent.InsertString(0, markupString.ToString());
                 markupStringList.Add(myMarkupParent);
             }
+        }
+
+        /// <summary>
+        /// The work-horse for destructively copying a substring set of a MarkupString into the given MarkupString object.
+        /// </summary>
+        /// <param name="newMarkupString">The MarkupString object to copy into.</param>
+        /// <param name="position"></param>
+        /// <param name="length"></param>
+        /// <returns>The newMarkupString, now filled with this MarkupString's information.</returns>
+        public MarkupString CopySubstringInto(MarkupString newMarkupString, int position, int length)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
