@@ -95,11 +95,11 @@ namespace MUA
         /// <param name="length">How many characters to copy.</param>
         public MarkupString(MarkupString copyFrom, int position, int length)
         {
-            
+            copyFrom.CopySubstringInto(this, position, length);
         }
 
         /// <summary>       
-        /// This function returns the location of the MarkupString after concatenating two existing ones.
+        /// This function returns the position of the MarkupString after concatenating two existing ones.
         /// <remarks>It is up to another function to link this result in properly.</remarks>
         /// </summary>
         /// <param name="left">MarkupString on the left.</param>
@@ -279,15 +279,15 @@ namespace MUA
         /// <summary>
         /// Deletes a string and potential markup from the MarkupString, based on character position (starting at 0) and length.
         /// </summary>
-        /// <param name="location">The array-location for the first character to remove from the current MarkupString Node.</param>
+        /// <param name="position">The array-position for the first character to remove from the current MarkupString Node.</param>
         /// <param name="length">The amount of characters to delete, starting at the first character in this MarkupString Node.</param>
         /// <returns>Itself.</returns>
-        public MarkupString DeleteString(int location, int length)
+        public MarkupString DeleteString(int position, int length)
         {
             var deletionIndexes = new List<int>();
             if (IsString())
             {
-                markupString.Remove(location, length);
+                markupString.Remove(position, length);
             }
             else
             {
@@ -300,22 +300,22 @@ namespace MUA
                     // We're done if we have nothing else to delete.
                     if (length <= 0) break;
 
-                    // If the weight is less than the location, or equal to, this is not where we want to delete.
-                    // So reduce the relative-location and try again.
-                    if (markupStringItem.Weight() <= location)
+                    // If the weight is less than the position, or equal to, this is not where we want to delete.
+                    // So reduce the relative-position and try again.
+                    if (markupStringItem.Weight() <= position)
                     {
-                        location -= markupStringItem.Weight();
+                        position -= markupStringItem.Weight();
                         continue;
                     }
 
-                    var maxCut = markupStringItem.Weight() - location;
+                    var maxCut = markupStringItem.Weight() - position;
                     var curCut = (maxCut < length ? maxCut : length);
 
-                    markupStringItem.DeleteString(location, curCut);
+                    markupStringItem.DeleteString(position, curCut);
                     // Should this be done with a evalWeight() function or similar?
                     stringWeight[index] = markupStringItem.Weight();
                     length -= curCut;
-                    location = 0;
+                    position = 0;
 
                     if (markupStringItem.Weight() != 0) continue;
 
@@ -417,7 +417,49 @@ namespace MUA
         /// <returns>The newMarkupString, now filled with this MarkupString's information.</returns>
         public MarkupString CopySubstringInto(MarkupString newMarkupString, int position, int length)
         {
-            throw new NotImplementedException();
+            var copyIndexes = new List<int>();
+            if (IsString())
+            {
+                newMarkupString.MyMarkup = null;
+                newMarkupString.beneathList = null;
+                newMarkupString.stringWeight = null;
+                newMarkupString.markupString = new StringBuilder(markupString.ToString().Substring(position, length));
+            }
+            else
+            {
+                newMarkupString.MyMarkup = new Markup(MyMarkup);
+                newMarkupString.beneathList = new List<MarkupString>();
+                newMarkupString.stringWeight = new List<int>();
+                newMarkupString.markupString = null;
+
+                // We can't do this in parallel. Must be done in-order.
+                foreach (var markupStringItem in beneathList)
+                {
+                    // We're done if we have nothing else to add to the substring node.
+                    if (length <= 0) break;
+
+                    // If the weight is less than the position, or equal to, this is not where we want to copy from.
+                    // So reduce the relative-position and try again.
+                    if (markupStringItem.Weight() <= position)
+                    {
+                        position -= markupStringItem.Weight();
+                        continue;
+                    }
+
+                    var maxCut = markupStringItem.Weight() - position;
+                    var curCut = (maxCut < length ? maxCut : length);
+
+                    var thisOne = new MarkupString();
+                    markupStringItem.CopySubstringInto(thisOne,position, curCut);
+
+                    newMarkupString.beneathList.Add(thisOne);
+                    newMarkupString.stringWeight.Add(thisOne.Weight());
+
+                    length -= curCut;
+                    position = 0;
+                }
+            }
+            return this;
         }
 
         /// <summary>
