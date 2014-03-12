@@ -59,7 +59,7 @@ namespace MUA
             root2.FlattenInto(ref test2);
 
             sb2.Clear();
-
+            
             foreach (var each in test2)
                 sb2.Append(each);
 

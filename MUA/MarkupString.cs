@@ -5,7 +5,6 @@
 // <author>Harry Cordewener</author>
 //-----------------------------------------------------------------------
 
-using System;
 using System.Text;
 
 namespace MUA
@@ -417,7 +416,6 @@ namespace MUA
         /// <returns>The newMarkupString, now filled with this MarkupString's information.</returns>
         public MarkupString CopySubstringInto(MarkupString newMarkupString, int position, int length)
         {
-            var copyIndexes = new List<int>();
             if (IsString())
             {
                 newMarkupString.MyMarkup = null;
