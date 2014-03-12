@@ -415,13 +415,13 @@ namespace MUA
 
             newMarkupString.beneathList = new List<MarkupString>();
             newMarkupString.stringWeight = new List<int>();
+            newMarkupString.MyMarkup = new Markup(MyMarkup);
             foreach (var mySubMarkupString in beneathList)
             {
                 newMarkupString.markupString = null;
                 var thisOne = new MarkupString();
                 newMarkupString.beneathList.Add(mySubMarkupString.CopyInto(thisOne));
                 newMarkupString.stringWeight.Add(thisOne.Weight());
-                newMarkupString.MyMarkup = new Markup(mySubMarkupString.MyMarkup);
             }
 
             return newMarkupString;
