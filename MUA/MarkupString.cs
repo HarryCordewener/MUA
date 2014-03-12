@@ -14,6 +14,9 @@ namespace MUA
 
     /// <summary>
     /// The MarkupString class, containing Markup and the lot. Awaiting implementation.
+    /// It must be noted that the MarkupString class can be in either or two states:
+    /// 1) StringNode: The leaf of the structure, defining the contents.
+    /// 2) MarkupNode: The root nodes of the structure, defining the markup of the underlying nodes and leaves.
     /// </summary>
     public class MarkupString
     {
@@ -47,7 +50,7 @@ namespace MUA
         {
             beneathList = new List<MarkupString>();
             stringWeight = new List<int>();
-            MyMarkup = new Markup(null);
+            MyMarkup = new Markup();
         }
 
         /// <summary>
@@ -68,9 +71,18 @@ namespace MUA
         /// <param name="mup">The Markup to use the left side of this MarkupString Node.</param>
         public MarkupString(Markup mup)
         {
-            MyMarkup = mup;
+            MyMarkup = new Markup(mup);
             beneathList = new List<MarkupString>();
             stringWeight = new List<int>();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MarkupString"/> Copied from the object given.
+        /// </summary>
+        /// <param name="copyFrom">The MarkupString node to assumed to be root - and copy from.</param>
+        public MarkupString(MarkupString copyFrom)
+        {
+            copyFrom.CopyInto(this);
         }
 
         /// <summary>       
@@ -193,7 +205,7 @@ namespace MUA
             {
                 beneathList = new List<MarkupString>();
                 stringWeight = new List<int>();
-                MyMarkup = new Markup(null); // Blank Markup Transition
+                MyMarkup = new Markup(); // Blank Markup Transition
 
                 var rightside = markupString.ToString().Substring(position);
                 var leftside = markupString.ToString().Substring(0, markupString.Length - rightside.Length);
@@ -362,7 +374,7 @@ namespace MUA
         /// <param name="markupStringList">A reference to a markupStringList that you wish to put things into.</param>
         public void FlattenInto(ref List<MarkupString> markupStringList)
         {
-            var myMarkup = new Markup(null);
+            var myMarkup = new Markup();
             FlattenInto(ref markupStringList, MyMarkup.Mix(myMarkup));
         }
 
@@ -381,6 +393,38 @@ namespace MUA
                 myMarkupParent.InsertString(0, markupString.ToString());
                 markupStringList.Add(myMarkupParent);
             }
+        }
+
+        /// <summary>
+        /// Destructively Copies the whole MarkupString Structure into the given MarkupString Object.
+        /// </summary>
+        /// <param name="newMarkupString">The MarkupString object to copy into.</param>
+        /// <returns>The newMarkupString, now filled with this MarkupString's information.</returns>
+        public MarkupString CopyInto(MarkupString newMarkupString)
+        {
+            if (IsString())
+            {
+                newMarkupString.beneathList = null;
+                newMarkupString.stringWeight = null;
+                newMarkupString.MyMarkup = null;
+                newMarkupString.markupString = new StringBuilder();
+                newMarkupString.markupString.Append(markupString);
+                return newMarkupString;
+            }
+            // Implied else.
+
+            newMarkupString.beneathList = new List<MarkupString>();
+            newMarkupString.stringWeight = new List<int>();
+            foreach (var mySubMarkupString in beneathList)
+            {
+                newMarkupString.markupString = null;
+                var thisOne = new MarkupString();
+                newMarkupString.beneathList.Add(mySubMarkupString.CopyInto(thisOne));
+                newMarkupString.stringWeight.Add(thisOne.Weight());
+                newMarkupString.MyMarkup = new Markup(mySubMarkupString.MyMarkup);
+            }
+
+            return newMarkupString;
         }
     }
 }

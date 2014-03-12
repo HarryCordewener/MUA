@@ -52,6 +52,21 @@ namespace MUA
             Console.Read();
             Console.Read();
 
+            var root2 = new MarkupString(root);
+            Console.WriteLine(root2.ToString());
+            root2.InsertString(7, "Graaaa");
+            test2.Clear();
+            root2.FlattenInto(ref test2);
+
+            sb2.Clear();
+
+            foreach (var each in test2)
+                sb2.Append(each);
+
+            Console.WriteLine(sb2.ToString());
+
+            Console.Read();
+            Console.Read();
 
             return 0;
         }

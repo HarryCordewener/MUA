@@ -54,33 +54,58 @@ namespace MUA
     public class Markup
     {
         /// <summary>
-        /// Contains the markup as a string. <remarks>(TMP TEST VERSION)</remarks>
+        /// Contains the markup as a string. 
+        /// <remarks>(TMP TEST VERSION). Also, we may be able to reduce memory for MarkupString with GetValueOrDefault()?</remarks>
         /// </summary>
         public HashSet<MarkupRule> MyMarkup;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Markup"/> class.
         /// </summary>
-        /// <param name="myMarkup">An optional string representation of the markup. <remarks>(TMP TEST VERSION)</remarks></param>
-        public Markup(HashSet<MarkupRule> myMarkup)
+        public Markup()
         {
+            MyMarkup = new HashSet<MarkupRule> { MarkupRule.OnlyInherit };
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Markup"/> class. Based on a MarkupRule unique list.
+        /// </summary>
+        /// <param name="myMarkup">An optional MarkupRule representation of the markup.</param>
+        public Markup(IEnumerable<MarkupRule> myMarkup)
+        {
+            MyMarkup = new HashSet<MarkupRule>();
             if (myMarkup == null)
             {
-                MyMarkup = new HashSet<MarkupRule> { MarkupRule.OnlyInherit };
+                MyMarkup.Add(MarkupRule.OnlyInherit);
                 return;
             }
-            MyMarkup = myMarkup;
+            MyMarkup.UnionWith(myMarkup);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Markup"/> class. Copies from the given myMarkup variable.
+        /// </summary>
+        /// <param name="myMarkup">The Markup object to copy off of.</param>
+        public Markup(Markup myMarkup)
+        {
+            MyMarkup = new HashSet<MarkupRule>();
+            if (myMarkup == null)
+            {
+                MyMarkup.Add(MarkupRule.OnlyInherit);
+                return;
+            }
+            myMarkup.CopyMarkup(this);
         }
 
         /// <summary>
         /// This function mixes a Markup Object, assuming this object is the child (new addition) and the argument is the parent.
         /// It returns a resulting Markup object.
         /// </summary>
-        /// <param name="markupList">The Markup object we inherit from.</param>
+        /// <param name="markup">The Markup object we inherit from.</param>
         /// <returns>The resulting Markup object.</returns>
-        public Markup Mix(Markup markupList)
+        public Markup Mix(Markup markup)
         {
-            var result = new Markup(markupList.MyMarkup);
+            var result = new Markup(markup.MyMarkup);
             result.MyMarkup.UnionWith(MyMarkup);
 
             return result;
@@ -105,6 +130,17 @@ namespace MUA
             foreach (var each in MyMarkup)
                 sb.Append(each);
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Destructively copies the current Markup of this instance to the markup object given.
+        /// </summary>
+        /// <param name="newMarkup">A new Markup object made with the default Constructor.</param>
+        /// <returns>The newMarkup given, now copied into.</returns>
+        private Markup CopyMarkup(Markup newMarkup)
+        {
+            newMarkup.MyMarkup.UnionWith(MyMarkup);
+            return newMarkup;
         }
     }
 }
