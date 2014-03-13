@@ -152,7 +152,7 @@ namespace MUA
         /// <param name="position">The position into which to insert. See remarks for insertion logic.</param>
         /// <param name="iString">The string to insert.</param>
         /// <returns>The markupstring itself.</returns>
-        public MarkupString InsertString(int position, string iString)
+        public MarkupString InsertString(string iString, int position)
         {
             if (!IsString())
             {
@@ -175,7 +175,7 @@ namespace MUA
                     // This is the adjustment for the 'last step reduction' error.
                     targetPosition += stringWeight[passedWeights];
 
-                    beneathList[passedWeights].InsertString(targetPosition, iString);
+                    beneathList[passedWeights].InsertString(iString, targetPosition);
                     stringWeight[passedWeights] += iString.Length;
                 }
             }
@@ -211,7 +211,7 @@ namespace MUA
         /// <param name="position">The position into which to insert. See remarks for insertion logic.</param>
         /// <param name="mString">The MarkupString to insert.</param>
         /// <returns>The markupstring itself.</returns>
-        public MarkupString InsertString(int position, MarkupString mString)
+        public MarkupString InsertString(MarkupString mString, int position)
         {
             if (IsString())
             {
@@ -256,7 +256,7 @@ namespace MUA
                     // This is the adjustment for the 'last step reduction' error.
                     targetPosition += stringWeight[passedWeights];
 
-                    beneathList[passedWeights].InsertString(targetPosition, mString);
+                    beneathList[passedWeights].InsertString(mString, targetPosition);
                     stringWeight[passedWeights] += mString.Weight();
 
                     if (!beneathList[passedWeights].MyMarkup.IsOnlyInherit()) return this;
@@ -356,7 +356,7 @@ namespace MUA
             var result = new StringBuilder();
             result.Append("<" + MyMarkup + ">");
 
-            foreach (MarkupString each in beneathList)
+            foreach (var each in beneathList)
             {
                 result.Append(each);
             }
@@ -402,7 +402,7 @@ namespace MUA
             else
             {
                 var myMarkupParent = new MarkupString(mup);
-                myMarkupParent.InsertString(0, markupString.ToString());
+                myMarkupParent.InsertString(markupString.ToString(),0);
                 markupStringList.Add(myMarkupParent);
             }
         }
@@ -490,6 +490,21 @@ namespace MUA
             }
 
             return newMarkupString;
+        }
+
+        /// <summary>
+        /// An edit function that replaces the position->range with a copy of the new MarkupString.
+        /// </summary>
+        /// <param name="newMarkupString">The new MarkupString to copy and insert into this structure.</param>
+        /// <param name="position">The position where the edit begins, based on an insert position.</param>
+        /// <param name="length">The length of string to 'replace' with this edit.</param>
+        /// <returns>Itself.</returns>
+        public MarkupString Edit(MarkupString newMarkupString, int position, int length)
+        {
+            var replacement = new MarkupString(newMarkupString);
+            InsertString(replacement, position);
+            DeleteString(position + replacement.Weight(), length);
+            return this;
         }
     }
 }

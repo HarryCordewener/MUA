@@ -24,6 +24,7 @@ namespace MUA
         public static int Main()
         {
             var p = new Parser();
+            Console.WriteLine(p.ToString());
             // p used for testUnit.
 
             Console.Read();
@@ -32,9 +33,9 @@ namespace MUA
             var mar1L = new HashSet<MarkupRule> {mar1};
             var root = new MarkupString();
             var test = new MarkupString(new Markup(mar1L));
-            test.InsertString(0,"DOOD");
-            root.InsertString(0, "Omnomnom");
-            root.InsertString(4, test);
+            test.InsertString("DOOD", 0);
+            root.InsertString("Omnomnom", 0);
+            root.InsertString(test, 4);
             Console.WriteLine(root.ToString());
             root.DeleteString(3, 4);
             Console.WriteLine(root.ToString());
@@ -54,7 +55,7 @@ namespace MUA
 
             var root2 = new MarkupString(root,2,4);
             Console.WriteLine(root2.ToString());
-            root2.InsertString(2, "Graaaa");
+            root2.InsertString("Graaaa", 2);
             test2.Clear();
             root2.FlattenInto(ref test2);
 

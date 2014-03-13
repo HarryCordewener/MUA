@@ -5,12 +5,10 @@
 // <author>Harry Cordewener</author>
 //-----------------------------------------------------------------------
 
-using System.Linq;
 using System.Text;
 
 namespace MUA
 {
-    using System;
     using System.Collections.Generic;
 
     /// <summary>
@@ -137,10 +135,9 @@ namespace MUA
         /// </summary>
         /// <param name="newMarkup">A new Markup object made with the default Constructor.</param>
         /// <returns>The newMarkup given, now copied into.</returns>
-        private Markup CopyMarkup(Markup newMarkup)
+        private void CopyMarkup(Markup newMarkup)
         {
             newMarkup.MyMarkup.UnionWith(MyMarkup);
-            return newMarkup;
         }
     }
 }
