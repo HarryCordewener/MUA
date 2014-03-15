@@ -14,18 +14,32 @@ namespace MUA
     /// <summary>
     ///     The MarkupString class, containing Markup and the lot. Awaiting implementation.
     ///     It must be noted that the MarkupString class can be in either or two states:
-    ///     1) StringNode: The leaf of the structure, defining the contents.
-    ///     2) MarkupNode: The root nodes of the structure, defining the markup of the underlying nodes and leaves.
+    ///     1) String Node: The leaf of the structure, defining the contents.
+    ///     2) Markup Node: The root nodes of the structure, defining the markup of the underlying nodes and leaves.
     /// </summary>
     public partial class MarkupString
     {
         /// <summary>
-        ///     The MarkupString on the left. Null if none exists.
+        ///     Contains the markup for the elements below. It inherits down. The Markup below us is 'mixed' and overrides.
+        ///     We leave that to the Markup class.
+        /// </summary>
+        public Markup MyMarkup { get; set; }
+
+        /// <summary>
+        ///     The MarkupStrings beneath this Markup Node. Null if this is not a Markup Node.
         /// </summary>
         private List<MarkupString> beneathList;
 
         /// <summary>
-        ///     The flat string contained within the leaf of a Rope. null or "" otherwise.
+        ///     Returns the total length of the strings beneath this node.
+        ///     <remarks>
+        ///         We internally make use of this to rapidly find positions.
+        ///     </remarks>
+        /// </summary>
+        private List<int> stringWeight;
+
+        /// <summary>
+        ///     The flat string contained within the leaf of a MarkupString, making this a String Node. null otherwise.
         /// </summary>
         private StringBuilder markupString;
 
@@ -37,14 +51,6 @@ namespace MUA
         {
             return markupString != null;
         }
-
-        /// <summary>
-        ///     Returns the total length of the strings beneath this node.
-        ///     <remarks>
-        ///         We internally make use of this to rapidly find positions.
-        ///     </remarks>
-        /// </summary>
-        private List<int> stringWeight;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="MarkupString" /> class.
@@ -82,12 +88,6 @@ namespace MUA
             beneathList = new List<MarkupString>();
             stringWeight = new List<int>();
         }
-
-        /// <summary>
-        ///     Contains the markup for the elements below. It inherits down. The Markup below us is 'mixed' and overrides.
-        ///     We leave that to the Markup class.
-        /// </summary>
-        public Markup MyMarkup { get; set; }
 
         /// <summary>
         ///     This function returns the position of the MarkupString after concatenating two existing ones.
