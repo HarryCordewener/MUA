@@ -27,19 +27,24 @@ namespace MUA
         }
 
         /// <summary>
-        ///     Implementation of flattening the MarkupString. This is meant to create an equivalent MarkupString List.
+        ///     Wrapper for flattening the MarkupString. This is meant to create an equivalent MarkupString List.
         ///     <remarks>
         ///         This should call Mix as we move down, and then when we hit text, create the new MarkupString representation
         ///         of that string, with a parent that holds this new Mixed Markup.
         ///     </remarks>
         /// </summary>
-        /// <param name="markupStringList">A reference to a markupStringList that you wish to put things into.</param>
+        /// <param name="markupStringList">A reference to a markupStringList to put the generated MarkupString instances into.</param>
         public void FlattenInto(ref List<MarkupString> markupStringList)
         {
             var myMarkup = new Markup();
             FlattenInto(ref markupStringList, MyMarkup.Mix(myMarkup));
         }
 
+        /// <summary>
+        /// Implementation of flattening the MarkupString. This assumes the wrapper has given us a mixed markup for the first step.
+        /// </summary>
+        /// <param name="markupStringList">A reference to a markupStringList to put the generated MarkupString instances into.</param>
+        /// <param name="mup">The Markup of our parent to Markup.Mix()</param>
         private void FlattenInto(ref List<MarkupString> markupStringList, Markup mup)
         {
             if (!IsString())
@@ -52,20 +57,30 @@ namespace MUA
             else
             {
                 var myMarkupParent = new MarkupString(mup);
-                myMarkupParent.InsertString(markupString.ToString(), 0);
+                myMarkupParent.Insert(markupString.ToString(), 0);
                 markupStringList.Add(myMarkupParent);
             }
         }
 
         /// <summary>
-        ///     Wrapper for a MarkupString substring copy.
+        ///     Retrieves a substring from this instance. The substring starts at a specified position and has a specified length.
         /// </summary>
-        /// <param name="position">What character position (0 based) to start the copy from.</param>
-        /// <param name="length">How many characters to copy.</param>
+        /// <param name="position">The zero-based starting character position in this instance.</param>
+        /// <param name="length">The number of characters in the substring.</param>
         /// <returns>A new MarkupString object containing the object's substring.</returns>
         public MarkupString SubString(int position, int length)
         {
             return new MarkupString(this, position, length);
+        }
+
+        /// <summary>
+        ///     Retrieves a substring from this instance. The substring starts at a specified position.h.
+        /// </summary>
+        /// <param name="position">The zero-based starting character position in this instance.</param>
+        /// <returns>A new MarkupString object containing the object's substring.</returns>
+        public MarkupString Substring(int position)
+        {
+            return new MarkupString(this,position,Weight()-position);
         }
 
         /// <summary>

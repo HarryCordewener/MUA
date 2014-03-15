@@ -142,7 +142,7 @@ namespace MUA
         /// <param name="position">The position into which to insert. See remarks for insertion logic.</param>
         /// <param name="iString">The string to insert.</param>
         /// <returns>The markupstring itself.</returns>
-        public MarkupString InsertString(string iString, int position)
+        public MarkupString Insert(string iString, int position)
         {
             if (!IsString())
             {
@@ -165,7 +165,7 @@ namespace MUA
                     // This is the adjustment for the 'last step reduction' error.
                     targetPosition += stringWeight[passedWeights];
 
-                    beneathList[passedWeights].InsertString(iString, targetPosition);
+                    beneathList[passedWeights].Insert(iString, targetPosition);
                     stringWeight[passedWeights] += iString.Length;
                 }
             }
@@ -201,7 +201,7 @@ namespace MUA
         /// <param name="position">The position into which to insert. See remarks for insertion logic.</param>
         /// <param name="mString">The MarkupString to insert. Please make sure to give it a Copy!</param>
         /// <returns>The markupstring itself.</returns>
-        public MarkupString InsertString(MarkupString mString, int position)
+        public MarkupString Insert(MarkupString mString, int position)
         {
             if (IsString())
             {
@@ -246,7 +246,7 @@ namespace MUA
                     // This is the adjustment for the 'last step reduction' error.
                     targetPosition += stringWeight[passedWeights];
 
-                    beneathList[passedWeights].InsertString(mString, targetPosition);
+                    beneathList[passedWeights].Insert(mString, targetPosition);
                     stringWeight[passedWeights] += mString.Weight();
 
                     if (!beneathList[passedWeights].MyMarkup.IsOnlyInherit()) return this;
@@ -272,7 +272,7 @@ namespace MUA
         /// <param name="position">The array-position for the first character to remove from the current MarkupString Node.</param>
         /// <param name="length">The amount of characters to delete, starting at the first character in this MarkupString Node.</param>
         /// <returns>Itself.</returns>
-        public MarkupString DeleteString(int position, int length)
+        public MarkupString Remove(int position, int length)
         {
             var deletionIndexes = new List<int>();
             if (IsString())
@@ -301,7 +301,7 @@ namespace MUA
                     int maxCut = markupStringItem.Weight() - position;
                     int curCut = (maxCut < length ? maxCut : length);
 
-                    markupStringItem.DeleteString(position, curCut);
+                    markupStringItem.Remove(position, curCut);
                     // Should this be done with a evalWeight() function or similar?
                     stringWeight[index] = markupStringItem.Weight();
                     length -= curCut;
@@ -334,11 +334,11 @@ namespace MUA
         /// <param name="position">The position where the edit begins, based on an insert position.</param>
         /// <param name="length">The length of string to 'replace' with this edit.</param>
         /// <returns>Itself.</returns>
-        public MarkupString Edit(MarkupString newMarkupString, int position, int length)
+        public MarkupString Replace(MarkupString newMarkupString, int position, int length)
         {
             var replacement = new MarkupString(newMarkupString);
-            InsertString(replacement, position);
-            DeleteString(position + replacement.Weight(), length);
+            Insert(replacement, position);
+            Remove(position + replacement.Weight(), length);
             return this;
         }
     }

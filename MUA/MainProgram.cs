@@ -33,11 +33,11 @@ namespace MUA
             var mar1L = new HashSet<MarkupRule> {mar1};
             var root = new MarkupString();
             var test = new MarkupString(new Markup(mar1L));
-            test.InsertString("DOOD", 0);
-            root.InsertString("Omnomnom", 0);
-            root.InsertString(test, 4);
+            test.Insert("DOOD", 0);
+            root.Insert("Omnomnom", 0);
+            root.Insert(test, 4);
             Console.WriteLine(root.ToString());
-            root.DeleteString(3, 4);
+            root.Remove(3, 4);
             Console.WriteLine(root.ToString());
 
             var test2 = new List<MarkupString>();
@@ -55,9 +55,9 @@ namespace MUA
 
             var root2 = new MarkupString(root,2,4);
             Console.WriteLine(root2.ToString());
-            root2.InsertString("Graaaa", 2);
-            root2.Edit(new MarkupString("Dooooom"), 3, 4);
-            root2.Edit(root, 4, 2);
+            root2.Insert("Graaaa", 2);
+            root2.Replace(new MarkupString("Dooooom"), 3, 4);
+            root2.Replace(root, 4, 2);
             test2.Clear();
             root2.FlattenInto(ref test2);
 
