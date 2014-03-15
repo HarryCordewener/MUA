@@ -183,18 +183,6 @@ namespace MUA
         }
 
         /// <summary>
-        ///     Appends a MarkupString to the end of this instance of MarkupString.
-        /// </summary>
-        /// <param name="mString">The MarkupString being added to this instance.</param>
-        /// <returns>Itself.</returns>
-        public MarkupString Append(MarkupString mString)
-        {
-            beneathList.Add(mString);
-            stringWeight.Add(mString.Weight());
-            return this;
-        }
-
-        /// <summary>
         ///     The InsertString will put mString into the position in the MarkupString structure.
         ///     To do this, it may split up a string beneath it. After all, the node is expected to be Marked Up.
         /// </summary>
@@ -324,6 +312,18 @@ namespace MUA
                     stringWeight.RemoveAt(index);
                 }
             }
+            return this;
+        }
+
+        /// <summary>
+        ///     Appends a MarkupString to the end of this instance of MarkupString.
+        /// </summary>
+        /// <param name="mString">The MarkupString being added to this instance.</param>
+        /// <returns>Itself.</returns>
+        public MarkupString Append(MarkupString mString)
+        {
+            beneathList.Add(mString);
+            stringWeight.Add(mString.Weight());
             return this;
         }
 

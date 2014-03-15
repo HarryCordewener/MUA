@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace MUA
 {
@@ -68,7 +71,7 @@ namespace MUA
         /// <param name="position">The zero-based starting character position in this instance.</param>
         /// <param name="length">The number of characters in the substring.</param>
         /// <returns>A new MarkupString object containing the object's substring.</returns>
-        public MarkupString SubString(int position, int length)
+        public MarkupString Substring(int position, int length)
         {
             return new MarkupString(this, position, length);
         }
@@ -182,7 +185,7 @@ namespace MUA
         ///     Returns the String representation of the MarkupString. This visits all of its children.
         /// </summary>
         /// <returns>A string.</returns>
-        public override string ToString()
+        public string ToTestString()
         {
             if (IsString()) return markupString.ToString();
 
@@ -196,6 +199,64 @@ namespace MUA
 
             result.Append("</" + MyMarkup + ">");
             return result.ToString();
+        }
+
+        /// <summary>
+        ///     Returns the plain String representation of the MarkupString. This visits all of its children.
+        /// </summary>
+        /// <returns>A string.</returns>
+        public override string ToString()
+        {
+            if (IsString()) return markupString.ToString();
+
+            var result = new StringBuilder();
+
+            foreach (MarkupString each in beneathList)
+            {
+                result.Append(each);
+            }
+
+            return result.ToString();
+        }
+
+        /// <summary>
+        /// Splits the MarkupString into a List of MarkupStrings, split by the delimiter, and with the delimiter removed.
+        /// </summary>
+        /// <param name="delimiter">The string delimiter to use in splitting the MarkupString</param>
+        /// <returns>A List of MarkupStrings, split by the delimiter, and with the delimiter removed.</returns>
+        public List<MarkupString> Split(string delimiter)
+        {
+            var result = new List<MarkupString>();
+            Regex genRegex = new Regex(Regex.Escape(delimiter));
+            Split(ref genRegex, ref result);
+            return result;
+        }
+        
+        /// <summary>
+        /// Splits the MarkupString into a List of MarkupStrings, split by the delimiter, and with the delimiter removed.
+        /// It additively alters the given markupStringList to do this.
+        /// </summary>
+        /// <param name="delimiter">A regular expression that describes the delimiter.</param>
+        /// <param name="markupStringList">The list to which to add the substrings.</param>
+        private void Split(ref Regex delimiter, ref List<MarkupString> markupStringList)
+        {
+            int leftbehind = 0;
+            string myself = ToString();
+            var results = delimiter.Matches(myself);
+
+            if (results.Count == 0)
+            {
+                markupStringList.Add(new MarkupString(this));
+                return;
+            } 
+
+            foreach (Match group in results)
+            {
+                markupStringList.Add(Substring(leftbehind, group.Index - leftbehind));
+                leftbehind = group.Index + group.Length;
+            }
+
+            markupStringList.Add(Substring(leftbehind));
         }
     }
 }

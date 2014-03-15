@@ -7,6 +7,7 @@
 
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace MUA
 {
@@ -26,7 +27,7 @@ namespace MUA
             var p = new Parser();
             Console.WriteLine(p.ToString());
             // p used for testUnit.
-
+            
             Console.Read();
 
             const MarkupRule mar1 = MarkupRule.HiLight;
@@ -56,7 +57,7 @@ namespace MUA
             var root2 = new MarkupString(root,2,4);
             Console.WriteLine(root2.ToString());
             root2.Insert("Graaaa", 2);
-            root2.Replace(new MarkupString("Dooooom"), 3, 4);
+            root2.Replace(new MarkupString("IttyBittyKittyCommitty"), 3, 4);
             root2.Replace(root, 4, 2);
             test2.Clear();
             root2.FlattenInto(ref test2);
@@ -64,9 +65,16 @@ namespace MUA
             sb2.Clear();
             
             foreach (var each in test2)
-                sb2.Append(each);
+                sb2.Append(each.ToTestString());
 
             Console.WriteLine(sb2.ToString());
+
+            var splitlist = root2.Split("itty");
+
+            foreach (var word in splitlist)
+            {
+                Console.WriteLine(word.ToTestString());
+            }
 
             Console.Read();
             Console.Read();
