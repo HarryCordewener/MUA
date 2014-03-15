@@ -209,7 +209,7 @@ namespace MUA
         /// To do this, it may split up a string beneath it. After all, the node is expected to be Marked Up.
         /// </summary>
         /// <param name="position">The position into which to insert. See remarks for insertion logic.</param>
-        /// <param name="mString">The MarkupString to insert.</param>
+        /// <param name="mString">The MarkupString to insert. Please make sure to give it a Copy!</param>
         /// <returns>The markupstring itself.</returns>
         public MarkupString InsertString(MarkupString mString, int position)
         {
@@ -408,13 +408,24 @@ namespace MUA
         }
 
         /// <summary>
+        /// Wrapper for a MarkupString substring copy.
+        /// </summary>
+        /// <param name="position">What character position (0 based) to start the copy from.</param>
+        /// <param name="length">How many characters to copy.</param>
+        /// <returns>A new MarkupString object containing the object's substring.</returns>
+        public MarkupString SubString(int position, int length)
+        {
+            return new MarkupString(this, position, length);
+        }
+
+        /// <summary>
         /// The work-horse for destructively copying a substring set of a MarkupString into the given MarkupString object.
         /// </summary>
         /// <param name="newMarkupString">The MarkupString object to copy into.</param>
         /// <param name="position"></param>
         /// <param name="length"></param>
         /// <returns>The newMarkupString, now filled with this MarkupString's information.</returns>
-        public MarkupString CopySubstringInto(MarkupString newMarkupString, int position, int length)
+        private MarkupString CopySubstringInto(MarkupString newMarkupString, int position, int length)
         {
             if (IsString())
             {
@@ -491,7 +502,7 @@ namespace MUA
 
             return newMarkupString;
         }
-
+        
         /// <summary>
         /// An edit function that replaces the position->range with a copy of the new MarkupString.
         /// </summary>

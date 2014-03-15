@@ -63,7 +63,9 @@ namespace MUA
         /// </summary>
         public Parser()
         {
-            var tester = new StringBuilder("testfunction2() testfunction3() \\[donotevalfun()] [testfunction(4)] The following is a function evaluation: >[testfunction(arg,arg2)]< and we are safe.");
+            var tester =
+                new StringBuilder(
+                    "testfunction2() testfunction3() \\[donotevalfun()] [testfunction(4)] The following is a function evaluation: >[testfunction(arg,arg2)]< and we are safe.");
             tester.EnsureCapacity(16384);
             Parse(0, ref tester, ref specialChar);
             Console.WriteLine("Result:" + tester);
@@ -92,8 +94,8 @@ namespace MUA
         /// <remarks>
         /// <para>We keep parsing until we either have reached the end of the StringBuilder, or reach the stop-character.
         /// We _DO NOT_ eat the stop-character. As some items may need to check what the stop-character was. 
-        /// They can eat if all if they want. And they (probably) should. 
-        /// The return value is the length of the string we have 'gone over', and is guaranteed to still 'exist'.</para>
+        /// They can eat if all if they want. And they (probably) should. </para>
+        /// <para>The return value is the length of the string we have 'gone over', and is guaranteed to still 'exist'.</para>
         /// <para>WHAT IF THE LAST CHARACTER IS AN OPENING CHARACTER!?
         /// PARSE SHOULD HANDLE THIS</para>
         /// <para>String parseString should get altered to use StringBuilder for faster response time and less memory waste.
@@ -106,7 +108,8 @@ namespace MUA
         /// <param name="closure">Forcefully add a closure for security purposes. This defines the required closing character of the 'haltexpression'.</param>
         /// <param name="evaluate">Whether or not we evaluate the string we parse. <remarks>Not Yet Implemented.</remarks></param>
         /// <returns>Returns the integer representation of how many characters we've 'changed' of the 'mystring'.</returns>
-        private int Parse(int startPosition, ref StringBuilder mystring, ref Regex haltexpression, char closure = '\0', bool evaluate = true)
+        private int Parse(int startPosition, ref StringBuilder mystring, ref Regex haltexpression, char closure = '\0',
+            bool evaluate = true)
         {
             var readerPosition = startPosition;
             var parseString = mystring.ToString().Remove(0, startPosition);
@@ -261,11 +264,10 @@ namespace MUA
                 // We should not be changing mystring until we get to the end of functionparse!!!
                 // We need to advance it to 'start' reading the argument one character further.
                 // As readerPosition is ',' or ')' or '(' guaranteed at this moment.
-                int arglength = Parse(++readerPosition, ref mystring, ref specialCharFunEndHalt, ')', true /* CHANGE THIS */);
+                var arglength = Parse(++readerPosition, ref mystring, ref specialCharFunEndHalt, ')', false );
                 functionStack.Push(mystring.ToString().Substring(readerPosition, arglength));
                 readerPosition += arglength;
-            }
-            while (mystring[readerPosition] != ')');
+            } while (mystring[readerPosition] != ')');
 
             mystring.Remove(readerPosition, 1); // )
 
@@ -277,6 +279,7 @@ namespace MUA
             var functionoutput = "This was once function " + functionName + "!";
             mystring.Remove(initialPosition, readerPosition - initialPosition);
             mystring.Insert(initialPosition, functionoutput);
+
             return functionoutput.Length;
         }
     }

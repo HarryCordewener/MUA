@@ -56,6 +56,8 @@ namespace MUA
             var root2 = new MarkupString(root,2,4);
             Console.WriteLine(root2.ToString());
             root2.InsertString("Graaaa", 2);
+            root2.Edit(new MarkupString("Dooooom"), 3, 4);
+            root2.Edit(root, 4, 2);
             test2.Clear();
             root2.FlattenInto(ref test2);
 
