@@ -48,7 +48,7 @@ namespace MUA
             
             foreach (var each in test2)
             {
-                sb2.Append(each);
+                sb2.Append(each.ToTestString());
             }
             Console.WriteLine(sb2.ToString());
             Console.Read();
@@ -60,14 +60,21 @@ namespace MUA
             root2.Replace(new MarkupString("IttyBittyKittyCommitty"), 3, 4);
             root2.Replace(root, 4, 2);
             test2.Clear();
+            
+            Console.WriteLine("---------");
+            Console.WriteLine(root2.ToTestString());
+            Console.WriteLine("---------");
+
             root2.FlattenInto(ref test2);
 
             sb2.Clear();
             
             foreach (var each in test2)
                 sb2.Append(each.ToTestString());
-
+            
+            Console.WriteLine("---------");
             Console.WriteLine(sb2.ToString());
+            Console.WriteLine("---------");
 
             var splitlist = root2.Split("itty");
 
