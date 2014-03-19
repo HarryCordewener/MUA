@@ -194,7 +194,7 @@ namespace MUA
 
             foreach (MarkupString each in beneathList)
             {
-                result.Append(each);
+                result.Append(each.ToTestString());
             }
 
             result.Append("</" + MyMarkup + ">");
