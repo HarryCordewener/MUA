@@ -141,27 +141,6 @@ namespace MUA
         }
 
         /// <summary>
-        ///     Returns the plain String representation of the MarkupString. This visits all of its children.
-        /// </summary>
-        /// <returns>A string.</returns>
-        public override string ToString()
-        {
-            if (this.IsString())
-            {
-                return this.markupString.ToString();
-            }
-
-            var result = new StringBuilder();
-
-            foreach (MarkupString each in this.beneathList)
-            {
-                result.Append(each);
-            }
-
-            return result.ToString();
-        }
-
-        /// <summary>
         ///     Splits the MarkupString into a List of MarkupStrings, split by the delimiter, and with the delimiter removed.
         /// </summary>
         /// <param name="delimiter">The string delimiter to use in splitting the MarkupString</param>
