@@ -5,11 +5,11 @@
 // <author>Harry Cordewener</author>
 //-----------------------------------------------------------------------
 
-using System.Collections.Generic;
-using System.Text;
-
 namespace MUA
 {
+    using System.Collections.Generic;
+    using System.Text;
+
     /// <summary>
     ///     Represents the markup rules. This is only a test version.
     ///     This will be far more complex in the future.
@@ -53,17 +53,11 @@ namespace MUA
     public class Markup
     {
         /// <summary>
-        ///     Contains the markup as a string.
-        ///     <remarks>(TMP TEST VERSION). Also, we may be able to reduce memory for MarkupString with GetValueOrDefault()?</remarks>
-        /// </summary>
-        public HashSet<MarkupRule> MyMarkup;
-
-        /// <summary>
         ///     Initializes a new instance of the <see cref="Markup" /> class.
         /// </summary>
         public Markup()
         {
-            MyMarkup = new HashSet<MarkupRule> {MarkupRule.OnlyInherit};
+            this.MyMarkup = new HashSet<MarkupRule> { MarkupRule.OnlyInherit };
         }
 
         /// <summary>
@@ -72,13 +66,14 @@ namespace MUA
         /// <param name="myMarkup">An optional MarkupRule representation of the markup.</param>
         public Markup(IEnumerable<MarkupRule> myMarkup)
         {
-            MyMarkup = new HashSet<MarkupRule>();
+            this.MyMarkup = new HashSet<MarkupRule>();
             if (myMarkup == null)
             {
-                MyMarkup.Add(MarkupRule.OnlyInherit);
+                this.MyMarkup.Add(MarkupRule.OnlyInherit);
                 return;
             }
-            MyMarkup.UnionWith(myMarkup);
+
+            this.MyMarkup.UnionWith(myMarkup);
         }
 
         /// <summary>
@@ -87,14 +82,21 @@ namespace MUA
         /// <param name="myMarkup">The Markup object to copy off of.</param>
         public Markup(Markup myMarkup)
         {
-            MyMarkup = new HashSet<MarkupRule>();
+            this.MyMarkup = new HashSet<MarkupRule>();
             if (myMarkup == null)
             {
-                MyMarkup.Add(MarkupRule.OnlyInherit);
+                this.MyMarkup.Add(MarkupRule.OnlyInherit);
                 return;
             }
+
             myMarkup.CopyMarkup(this);
         }
+
+        /// <summary>
+        ///     Gets or sets the markup information, which is stored as a unique set of MarkupRule-s.
+        ///     <remarks>(TMP TEST VERSION). Also, we may be able to reduce memory for MarkupString with GetValueOrDefault()?</remarks>
+        /// </summary>
+        private HashSet<MarkupRule> MyMarkup { get; set; }
 
         /// <summary>
         ///     This function mixes a Markup Object, assuming this object is the child (new addition) and the argument is the
@@ -106,7 +108,7 @@ namespace MUA
         public Markup Mix(Markup markup)
         {
             var result = new Markup(markup.MyMarkup);
-            result.MyMarkup.UnionWith(MyMarkup);
+            result.MyMarkup.UnionWith(this.MyMarkup);
 
             return result;
         }
@@ -114,10 +116,10 @@ namespace MUA
         /// <summary>
         ///     Returns whether this node is OnlyInherit, and can thus be deleted.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Boolean true or false.</returns>
         public bool IsOnlyInherit()
         {
-            return MyMarkup.Contains(MarkupRule.OnlyInherit);
+            return this.MyMarkup.Contains(MarkupRule.OnlyInherit);
         }
 
         /// <summary>
@@ -127,8 +129,12 @@ namespace MUA
         public override string ToString()
         {
             var sb = new StringBuilder();
-            foreach (MarkupRule each in MyMarkup)
+
+            foreach (MarkupRule each in this.MyMarkup) 
+            { 
                 sb.Append(each);
+            }
+
             return sb.ToString();
         }
 
@@ -136,10 +142,9 @@ namespace MUA
         ///     Destructively copies the current Markup of this instance to the markup object given.
         /// </summary>
         /// <param name="newMarkup">A new Markup object made with the default Constructor.</param>
-        /// <returns>The newMarkup given, now copied into.</returns>
         private void CopyMarkup(Markup newMarkup)
         {
-            newMarkup.MyMarkup.UnionWith(MyMarkup);
+            newMarkup.MyMarkup.UnionWith(this.MyMarkup);
         }
     }
 }

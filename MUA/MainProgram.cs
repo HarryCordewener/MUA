@@ -5,33 +5,31 @@
 // <author>Harry Cordewener</author>
 //-----------------------------------------------------------------------
 
-using System.Collections.Generic;
-using System.Text;
-using System.Text.RegularExpressions;
-
 namespace MUA
 {
     using System;
+    using System.Collections.Generic;
+    using System.Text;
 
     /// <summary>
-    /// The Main Program.
+    ///     The Main Program.
     /// </summary>
     public class MainProgram
     {
         /// <summary>
-        /// The main program runtime.
+        ///     The main program runtime.
         /// </summary>
         /// <returns>Nothing is returned.</returns>
         public static int Main()
         {
+            // p used for testUnit.
             var p = new Parser();
             Console.WriteLine(p.ToString());
-            // p used for testUnit.
-            
+
             Console.Read();
 
-            const MarkupRule mar1 = MarkupRule.HiLight;
-            var mar1L = new HashSet<MarkupRule> {mar1};
+            const MarkupRule Mar1 = MarkupRule.HiLight;
+            var mar1L = new HashSet<MarkupRule> { Mar1 };
             var root = new MarkupString();
             var test = new MarkupString(new Markup(mar1L));
             test.Insert("DOOD", 0);
@@ -45,22 +43,23 @@ namespace MUA
             root.FlattenInto(ref test2);
 
             var sb2 = new StringBuilder();
-            
-            foreach (var each in test2)
+
+            foreach (MarkupString each in test2)
             {
                 sb2.Append(each.ToTestString());
             }
+
             Console.WriteLine(sb2.ToString());
             Console.Read();
             Console.Read();
 
-            var root2 = new MarkupString(root,2,4);
+            var root2 = new MarkupString(root, 2, 4);
             Console.WriteLine(root2.ToString());
             root2.Insert("Graaaa", 2);
             root2.Replace(new MarkupString("IttyBittyKittyCommitty"), 3, 4);
             root2.Replace(root, 4, 2);
             test2.Clear();
-            
+
             Console.WriteLine("---------");
             Console.WriteLine(root2.ToTestString());
             Console.WriteLine("---------");
@@ -68,17 +67,19 @@ namespace MUA
             root2.FlattenInto(ref test2);
 
             sb2.Clear();
-            
-            foreach (var each in test2)
+
+            foreach (MarkupString each in test2)
+            { 
                 sb2.Append(each.ToTestString());
-            
+            }
+
             Console.WriteLine("---------");
             Console.WriteLine(sb2.ToString());
             Console.WriteLine("---------");
 
-            var splitlist = root2.Split("itty");
+            List<MarkupString> splitlist = root2.Split("itty");
 
-            foreach (var word in splitlist)
+            foreach (MarkupString word in splitlist)
             {
                 Console.WriteLine(word.ToTestString());
             }

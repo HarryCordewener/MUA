@@ -58,7 +58,7 @@ namespace MUA
         /// <remarks>This may have to be changed to a FunctionResultStringTuple or something similar to enable the use of tuples.</remarks>
         public MarkupString ExecuteBody(ref Player player, ref Stack<MarkupString> arguments)
         {
-            Permissions.HasPermission(ref player);
+            this.Permissions.HasPermission(ref player);
             throw new NotImplementedException();
         }
     }

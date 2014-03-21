@@ -5,15 +5,15 @@
 // <author>Harry Cordewener</author>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-
 namespace MUA
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Globalization;
+    using System.Linq;
+    using System.Text;
+    using System.Text.RegularExpressions;
+
     /// <summary>
     ///     The Parser takes a String and evaluates it according to the parsing rules.
     /// </summary>
@@ -58,6 +58,20 @@ namespace MUA
         private Regex specialCharSquareEndHalt = new Regex(@"^(.*?)(?<SpecialChar>[\\\[{%\]])(.*$)");
 
         /// <summary>
+        ///     Initializes a new instance of the <see cref="Parser" /> class.
+        /// </summary>
+        public Parser()
+        {
+            var tester =
+                new StringBuilder(
+                    "testfunction2() testfunction3() \\[donotevalfun()] [testfunction(4)] The following is a function evaluation: >[testfunction(arg,arg2)]< and we are safe.");
+            tester.EnsureCapacity(16384);
+            this.Parse(0, ref tester, ref this.specialChar);
+            Console.WriteLine("Result:" + tester);
+            Console.Read();
+        }
+
+        /// <summary>
         ///     Indicates what type of string we are matching. Command-List, and standard Strings have different evaluation rules.
         /// </summary>
         private enum MatchState
@@ -71,20 +85,6 @@ namespace MUA
             ///     String Type matching.
             /// </summary>
             String
-        }
-
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="Parser" /> class.
-        /// </summary>
-        public Parser()
-        {
-            var tester =
-                new StringBuilder(
-                    "testfunction2() testfunction3() \\[donotevalfun()] [testfunction(4)] The following is a function evaluation: >[testfunction(arg,arg2)]< and we are safe.");
-            tester.EnsureCapacity(16384);
-            Parse(0, ref tester, ref specialChar);
-            Console.WriteLine("Result:" + tester);
-            Console.Read();
         }
 
         /// <summary>
@@ -107,47 +107,46 @@ namespace MUA
         ///     </para>
         ///     <para>Needs to be changed to use MarkupString instead of String!</para>
         /// </remarks>
-        /// <param name="startPosition">Starting position of the full 'mystring' ref where we begin evaluation.</param>
-        /// <param name="mystring">The string reference to edit as we run through the parse-sequence.</param>
-        /// <param name="haltexpression">Where we halt and return to our previous caller.</param>
+        /// <param name="startPosition">Starting position of the full 'myString' ref where we begin evaluation.</param>
+        /// <param name="myString">The string reference to edit as we run through the parse-sequence.</param>
+        /// <param name="haltExpression">Where we halt and return to our previous caller.</param>
         /// <param name="closure">
         ///     Forcefully add a closure for security purposes. This defines the required closing character of
-        ///     the 'haltexpression'.
+        ///     the 'haltExpression'.
         /// </param>
         /// <param name="evaluate">
         ///     Whether or not we evaluate the string we parse.
         ///     <remarks>Not Yet Implemented.</remarks>
         /// </param>
-        /// <returns>Returns the integer representation of how many characters we've 'changed' of the 'mystring'.</returns>
-        private int Parse(int startPosition, ref StringBuilder mystring, ref Regex haltexpression, char closure = '\0',
-            bool evaluate = true)
+        /// <returns>Returns the integer representation of how many characters we've 'changed' of the 'myString'.</returns>
+        private int Parse(int startPosition, ref StringBuilder myString, ref Regex haltExpression, char closure = '\0', bool evaluate = true)
         {
             int readerPosition = startPosition;
-            string parseString = mystring.ToString().Remove(0, startPosition);
-            GroupCollection function = functionNameAscii.Match(parseString).Groups;
+            string parseString = myString.ToString().Remove(0, startPosition);
+            GroupCollection function = this.functionNameAscii.Match(parseString).Groups;
 
             if (!(closure == '\0' || parseString.Contains(closure)))
             {
-                mystring.Append(closure);
+                myString.Append(closure);
                 parseString = parseString.Insert(parseString.Length, closure.ToString(CultureInfo.InvariantCulture));
             }
 
-            if (functionNameAscii.IsMatch(parseString))
+            if (this.functionNameAscii.IsMatch(parseString))
             {
-                readerPosition += FunctionParse(readerPosition, ref mystring, function[1].ToString());
-                parseString = mystring.ToString().Remove(0, readerPosition);
+                readerPosition += this.FunctionParse(readerPosition, ref myString, function[1].ToString());
+                parseString = myString.ToString().Remove(0, readerPosition);
             }
 
-            while (haltexpression.IsMatch(parseString))
+            while (haltExpression.IsMatch(parseString))
             {
-                Match specialMatch = haltexpression.Match(parseString);
+                Match specialMatch = haltExpression.Match(parseString);
                 readerPosition += specialMatch.Groups[1].Length;
-                parseString = mystring.ToString().Remove(0, readerPosition);
+                parseString = myString.ToString().Remove(0, readerPosition);
 
                 int len;
 
                 // PLEASE TEST THIS TEMPORARY SOLUTION LATER!
-                if (readerPosition == mystring.Length)
+                if (readerPosition == myString.Length)
                 {
                     return readerPosition - startPosition;
                 }
@@ -155,16 +154,16 @@ namespace MUA
                 switch (parseString[0])
                 {
                     case '\\':
-                        len = EscapeParse(readerPosition, ref mystring);
+                        len = this.EscapeParse(readerPosition, ref myString);
                         break;
                     case '[':
-                        len = SquareParse(readerPosition, ref mystring);
+                        len = this.SquareParse(readerPosition, ref myString);
                         break;
                     case '%':
-                        len = PercentParse(readerPosition, ref mystring);
+                        len = this.PercentParse(readerPosition, ref myString);
                         break;
                     case '{':
-                        len = CurlyParse(readerPosition, ref mystring);
+                        len = this.CurlyParse(readerPosition, ref myString);
                         break;
                     default:
                         // We leave the string be! We hit a halting condition.
@@ -172,7 +171,7 @@ namespace MUA
                 }
 
                 readerPosition += len;
-                parseString = mystring.ToString().Remove(0, readerPosition);
+                parseString = myString.ToString().Remove(0, readerPosition);
             }
 
             return readerPosition - startPosition;
@@ -182,20 +181,20 @@ namespace MUA
         ///     The parse-handler for [...] expressions found. This is used to initiate a new parse-run and allow a function call
         ///     further down a string.
         /// </summary>
-        /// <param name="readerPosition">Where we start reading in the 'mystring'.</param>
-        /// <param name="mystring">The string we are evaluating.</param>
+        /// <param name="readerPosition">Where we start reading in the 'myString'.</param>
+        /// <param name="myString">The string we are evaluating.</param>
         /// <returns>
         ///     How many characters were added/changed forwards from the starting position. Aka, how much should the next call
         ///     skip.
         /// </returns>
-        private int SquareParse(int readerPosition, ref StringBuilder mystring)
+        private int SquareParse(int readerPosition, ref StringBuilder myString)
         {
             // Does this not dangerously assume that there is stuff after this? Or will parse insert the closure?
             // This needs to be checked.
             int startPosition = readerPosition;
-            int parseLength = Parse(++readerPosition, ref mystring, ref specialCharSquareEndHalt, ']');
-            mystring.Remove(startPosition, 1); // [
-            mystring.Remove(startPosition + parseLength, 1); // ]
+            int parseLength = this.Parse(++readerPosition, ref myString, ref this.specialCharSquareEndHalt, ']');
+            myString.Remove(startPosition, 1); // [
+            myString.Remove(startPosition + parseLength, 1); // ]
             return parseLength;
         }
 
@@ -203,72 +202,72 @@ namespace MUA
         ///     The parse-handler for {...} expressions found. This is used to initiate a new parse-run and ignore commas.
         ///     <remarks>This may need edits to not allow a new Function Call!</remarks>
         /// </summary>
-        /// <param name="readerPosition">Where we start reading in the 'mystring'.</param>
-        /// <param name="mystring">The string we are evaluating.</param>
+        /// <param name="readerPosition">Where we start reading in the 'myString'.</param>
+        /// <param name="myString">The string we are evaluating.</param>
         /// <returns>
         ///     How many characters were added/changed forwards from the starting position. Aka, how much should the next call
         ///     skip.
         /// </returns>
-        private int CurlyParse(int readerPosition, ref StringBuilder mystring)
+        private int CurlyParse(int readerPosition, ref StringBuilder myString)
         {
             int startPosition = readerPosition;
-            int parseLength = Parse(++readerPosition, ref mystring, ref specialCharCurlyEndHalt, '}');
-            mystring.Remove(startPosition, 1); // {
-            mystring.Remove(startPosition + parseLength, 1); // }
+            int parseLength = this.Parse(++readerPosition, ref myString, ref this.specialCharCurlyEndHalt, '}');
+            myString.Remove(startPosition, 1); // {
+            myString.Remove(startPosition + parseLength, 1); // }
             return parseLength;
         }
 
         /// <summary>
         ///     The parse-handler for \. expressions found. This is to handle escape sequences.
         /// </summary>
-        /// <param name="readerPosition">Where we start reading in the 'mystring'.</param>
-        /// <param name="mystring">The string we are evaluating.</param>
+        /// <param name="readerPosition">Where we start reading in the 'myString'.</param>
+        /// <param name="myString">The string we are evaluating.</param>
         /// <returns>
         ///     How many characters were added/changed forwards from the starting position. Aka, how much should the next call
         ///     skip.
         /// </returns>
-        private int EscapeParse(int readerPosition, ref StringBuilder mystring)
+        private int EscapeParse(int readerPosition, ref StringBuilder myString)
         {
-            mystring.Remove(readerPosition, 1);
+            myString.Remove(readerPosition, 1);
             return 1;
         }
 
         /// <summary>
         ///     The parse-handler for %. and &lt;...&gt; expressions found. This is to handle percent-expression sequences.
         /// </summary>
-        /// <param name="readerPosition">Where we start reading in the 'mystring'.</param>
-        /// <param name="mystring">The string we are evaluating.</param>
+        /// <param name="readerPosition">Where we start reading in the 'myString'.</param>
+        /// <param name="myString">The string we are evaluating.</param>
         /// <returns>
         ///     How many characters were added/changed forwards from the starting position. Aka, how much should the next call
         ///     skip.
         /// </returns>
-        private int PercentParse(int readerPosition, ref StringBuilder mystring)
+        private int PercentParse(int readerPosition, ref StringBuilder myString)
         {
             int startPosition = readerPosition;
             int percentLen;
-            switch (mystring[++readerPosition])
+            switch (myString[++readerPosition])
             {
                 case '<':
                     // We may want to make a <...> parse function, for the sake of both FunctionTuples and PercentParse.
-                    percentLen = Parse(readerPosition, ref mystring, ref specialCharLtEndHalt, '>') + 1;
+                    percentLen = this.Parse(readerPosition, ref myString, ref this.specialCharLtEndHalt, '>') + 1;
                     break;
                 default:
                     percentLen = 1;
                     break;
             }
 
-            string percentarg = mystring.ToString().Substring(startPosition, percentLen);
+            string percentarg = myString.ToString().Substring(startPosition, percentLen);
 
-            mystring.Remove(startPosition, 1); // %
-            mystring.Remove(startPosition, percentLen); // ...> or 'a character after %'
+            myString.Remove(startPosition, 1); // %
+            myString.Remove(startPosition, percentLen); // ...> or 'a character after %'
             throw new NotImplementedException();
         }
 
         /// <summary>
         ///     The parse-handler for Functions. This is to handle function(...,...) calls as well as the tuple calls.
         /// </summary>
-        /// <param name="readerPosition">Where we start reading in the 'mystring'.</param>
-        /// <param name="mystring">The string we are evaluating.</param>
+        /// <param name="readerPosition">Where we start reading in the 'myString'.</param>
+        /// <param name="myString">The string we are evaluating.</param>
         /// <param name="functionName">The string that expresses the function call's name.</param>
         /// <remarks>
         ///     Seeing as we have cases like the 'if()' function, or let() function, where not all arguments are evaluated,
@@ -279,7 +278,7 @@ namespace MUA
         ///     How many characters were added/changed forwards from the starting position. Aka, how much should the next call
         ///     skip.
         /// </returns>
-        private int FunctionParse(int readerPosition, ref StringBuilder mystring, string functionName)
+        private int FunctionParse(int readerPosition, ref StringBuilder myString, string functionName)
         {
             Console.WriteLine("<Function: " + functionName + ">");
             int initialPosition = readerPosition;
@@ -291,12 +290,13 @@ namespace MUA
                 // We should not be changing mystring until we get to the end of functionparse!!!
                 // We need to advance it to 'start' reading the argument one character further.
                 // As readerPosition is ',' or ')' or '(' guaranteed at this moment.
-                int arglength = Parse(++readerPosition, ref mystring, ref specialCharFunEndHalt, ')', false);
-                functionStack.Push(mystring.ToString().Substring(readerPosition, arglength));
+                int arglength = this.Parse(++readerPosition, ref myString, ref this.specialCharFunEndHalt, ')', false);
+                functionStack.Push(myString.ToString().Substring(readerPosition, arglength));
                 readerPosition += arglength;
-            } while (mystring[readerPosition] != ')');
+            } 
+            while (myString[readerPosition] != ')');
 
-            mystring.Remove(readerPosition, 1); // ')'
+            myString.Remove(readerPosition, 1); // ')'
 
             foreach (string argument in functionStack)
             {
@@ -304,8 +304,8 @@ namespace MUA
             }
 
             string functionoutput = "This was once function " + functionName + "!";
-            mystring.Remove(initialPosition, readerPosition - initialPosition);
-            mystring.Insert(initialPosition, functionoutput);
+            myString.Remove(initialPosition, readerPosition - initialPosition);
+            myString.Insert(initialPosition, functionoutput);
 
             return functionoutput.Length;
         }
