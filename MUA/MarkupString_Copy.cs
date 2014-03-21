@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+﻿using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -87,13 +85,33 @@ namespace MUA
         }
 
         /// <summary>
+        /// An inplace version of the Substring routine. It will cut off all unneeded pieces.
+        /// </summary>
+        /// <param name="position">The zero-based starting character position in this instance.</param>
+        /// <param name="length">The number of characters in the substring.</param>
+        /// <returns></returns>
+        private void CutSubstring(int position, int length)
+        {
+            if (IsString())
+            {
+                markupString.Remove(position + length, markupString.Length);
+                markupString.Remove(0, position);
+            }
+            else
+            {
+                Remove(position + length, Weight());
+                Remove(0, position);
+            }
+        }
+
+        /// <summary>
         ///     The work-horse for destructively copying a substring set of a MarkupString into the given MarkupString object.
         /// </summary>
         /// <param name="newMarkupString">The MarkupString object to copy into.</param>
-        /// <param name="position"></param>
-        /// <param name="length"></param>
+        /// <param name="position">The zero-based starting character position in this instance.</param>
+        /// <param name="length">The number of characters in the substring.</param>
         /// <returns>The newMarkupString, now filled with this MarkupString's information.</returns>
-        private MarkupString CopySubstringInto(MarkupString newMarkupString, int position, int length)
+        private void CopySubstringInto(MarkupString newMarkupString, int position, int length)
         {
             if (IsString())
             {
@@ -136,7 +154,6 @@ namespace MUA
                     position = 0;
                 }
             }
-            return this;
         }
 
         /// <summary>

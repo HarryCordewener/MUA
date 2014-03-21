@@ -296,7 +296,7 @@ namespace MUA
                 readerPosition += arglength;
             } while (mystring[readerPosition] != ')');
 
-            mystring.Remove(readerPosition, 1); // )
+            mystring.Remove(readerPosition, 1); // ')'
 
             foreach (string argument in functionStack)
             {
