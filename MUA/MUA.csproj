@@ -62,6 +62,7 @@
     <Compile Include="Markup.cs" />
     <Compile Include="MarkupString.cs" />
     <Compile Include="MarkupString_Copy.cs" />
+    <Compile Include="Object.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="Permission.cs" />
     <Compile Include="Player.cs" />
