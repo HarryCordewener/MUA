@@ -54,18 +54,18 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FunctionLibrary.cs" />
-    <Compile Include="FunctionParent.cs" />
-    <Compile Include="FunctionResult.cs" />
-    <Compile Include="IFunction.cs" />
-    <Compile Include="MainProgram.cs" />
-    <Compile Include="Markup.cs" />
-    <Compile Include="MarkupString.cs" />
-    <Compile Include="MarkupString_Copy.cs" />
-    <Compile Include="Object.cs" />
-    <Compile Include="Parser.cs" />
-    <Compile Include="Permission.cs" />
-    <Compile Include="Player.cs" />
+    <Compile Include="Function Handling\FunctionLibrary.cs" />
+    <Compile Include="Function Handling\FunctionParent.cs" />
+    <Compile Include="Function Handling\FunctionResult.cs" />
+    <Compile Include="Function Handling\IFunction.cs" />
+    <Compile Include="Testing\MainProgram.cs" />
+    <Compile Include="String Handling\Markup.cs" />
+    <Compile Include="String Handling\MarkupString.cs" />
+    <Compile Include="String Handling\MarkupString_Copy.cs" />
+    <Compile Include="Inner Database\Object.cs" />
+    <Compile Include="Evaluation Handling\Parser.cs" />
+    <Compile Include="Evaluation Handling\Permission.cs" />
+    <Compile Include="Inner Database\Player.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

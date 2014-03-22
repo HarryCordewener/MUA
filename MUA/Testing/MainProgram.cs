@@ -28,8 +28,8 @@ namespace MUA
 
             Console.Read();
 
-            const MarkupRule Mar1 = MarkupRule.HiLight;
-            var mar1L = new HashSet<MarkupRule> { Mar1 };
+            const MarkupRule mar1 = MarkupRule.HiLight;
+            var mar1L = new HashSet<MarkupRule> { mar1 };
             var root = new MarkupString();
             var test = new MarkupString(new Markup(mar1L));
             test.Insert("DOOD", 0);
