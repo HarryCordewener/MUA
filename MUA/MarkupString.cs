@@ -340,6 +340,27 @@ namespace MUA
         }
 
         /// <summary>
+        ///     Returns the plain String representation of the MarkupString. This visits all of its children.
+        /// </summary>
+        /// <returns>A string.</returns>
+        public override string ToString()
+        {
+            if (this.IsString())
+            {
+                return this.markupString.ToString();
+            }
+
+            var result = new StringBuilder();
+
+            foreach (MarkupString each in this.beneathList)
+            {
+                result.Append(each);
+            }
+
+            return result.ToString();
+        }
+
+        /// <summary>
         ///     An in-place version of the Substring routine. It will cut off all unneeded pieces.
         /// </summary>
         /// <param name="position">The zero-based starting character position in this instance.</param>
@@ -378,27 +399,6 @@ namespace MUA
         private bool IsString()
         {
             return this.markupString != null;
-        }
-
-        /// <summary>
-        ///     Returns the plain String representation of the MarkupString. This visits all of its children.
-        /// </summary>
-        /// <returns>A string.</returns>
-        public override string ToString()
-        {
-            if (this.IsString())
-            {
-                return this.markupString.ToString();
-            }
-
-            var result = new StringBuilder();
-
-            foreach (MarkupString each in this.beneathList)
-            {
-                result.Append(each);
-            }
-
-            return result.ToString();
         }
     }
 }
