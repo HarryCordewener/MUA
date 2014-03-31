@@ -19,7 +19,7 @@ namespace MUA
         /// </summary>
         /// <param name="obj">A reference to the player object trying to evaluate against the Permission Object.</param>
         /// <returns>A boolean, whether or not the player has access do whatever they are trying to do.</returns>
-        public bool HasPermission(ref MUA.Object obj)
+        public bool HasPermission(ref MUA.MObject obj)
         {
             throw new NotImplementedException();
         }

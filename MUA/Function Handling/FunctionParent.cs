@@ -56,7 +56,7 @@ namespace MUA
         /// <param name="arguments">A Stack of FunctionResults that represent the arguments.</param>
         /// <returns>The MarkupString to be appended as a result of this function call.</returns>
         /// <remarks>This may have to be changed to a FunctionResultStringTuple or something similar to enable the use of tuples.</remarks>
-        public FunctionResult ExecuteBody(ref MUA.Object obj, ref Stack<FunctionResult> arguments)
+        public FunctionResult ExecuteBody(ref MUA.MObject obj, ref Stack<FunctionResult> arguments)
         {
             this.Permissions.HasPermission(ref obj);
             throw new NotImplementedException();

@@ -5,15 +5,15 @@
 // <author>Harry Cordewener</author>
 //-----------------------------------------------------------------------
 
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+
 namespace MUA
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Globalization;
-    using System.Linq;
-    using System.Text;
-    using System.Text.RegularExpressions;
-
     /// <summary>
     ///     The Parser takes a String and evaluates it according to the parsing rules.
     /// </summary>
@@ -30,12 +30,22 @@ namespace MUA
         private readonly Regex specialChar = new Regex(@"^(.*?)(?<SpecialChar>[\\\[{%])(.*$)");
 
         /// <summary>
-        ///     Detects additional arguments to a function.
+        ///     An alternate version of handling the functionPlus cases. To be implemented later.
         /// </summary>
         /// <remarks>
-        ///     This is likely unused and needs to go.
+        ///     Based on my StackOverflow Question here: http://stackoverflow.com/questions/22745729
         /// </remarks>
-        private Regex functionPlus = new Regex(@"^(.*(?<!\\)(?:\\\\)*)[,\)](.*$)");
+        private Regex catchRegex = new Regex(@"^fun\(((?:[^()\\]|\\.|(?<o>\()|(?<-o>\)))+(?(o)(?!)))([\),])(.*$)");
+
+        /// <summary>
+        ///     Detects additional arguments to a function.
+        /// </summary>
+        private Regex functionPlus = new Regex(@"^(.*?(?<!\\)(?:\\\\)*)(?<SpecialChar>[,\)])(.*$)");
+
+        /// <summary>
+        ///     This is the opposite of functionPlus. It detects when a bracket opens.
+        /// </summary>
+        private Regex functionPlusStart = new Regex(@"^(.*?(?<!\\)(?:\\\\)*)(?<SpecialChar>[\(])(.*$)");
 
         /// <summary>
         ///     Looks for special characters, while also looking for a '}' as an end condition.
@@ -64,27 +74,11 @@ namespace MUA
         {
             var tester =
                 new StringBuilder(
-                    "testfunction2() testfunction3() \\[donotevalfun()] [testfunction(4)] The following is a function evaluation: >[testfunction(arg,arg2)]< and we are safe.");
+                    @"function(innerfunction(),innerfunction2(),arg3()) \[noeval()\] noeval2() [eval()]");
             tester.EnsureCapacity(16384);
             this.Parse(0, ref tester, ref this.specialChar);
             Console.WriteLine("Result:" + tester);
             Console.Read();
-        }
-
-        /// <summary>
-        ///     Indicates what type of string we are matching. Command-List, and standard Strings have different evaluation rules.
-        /// </summary>
-        private enum MatchState
-        {
-            /// <summary>
-            ///     Command List type matching.
-            /// </summary>
-            Commandlist,
-
-            /// <summary>
-            ///     String Type matching.
-            /// </summary>
-            String
         }
 
         /// <summary>
@@ -114,12 +108,8 @@ namespace MUA
         ///     Forcefully add a closure for security purposes. This defines the required closing character of
         ///     the 'haltExpression'.
         /// </param>
-        /// <param name="evaluate">
-        ///     Whether or not we evaluate the string we parse.
-        ///     <remarks>Not Yet Implemented.</remarks>
-        /// </param>
         /// <returns>Returns the integer representation of how many characters we've 'changed' of the 'myString'.</returns>
-        private int Parse(int startPosition, ref StringBuilder myString, ref Regex haltExpression, char closure = '\0', bool evaluate = true)
+        private int Parse(int startPosition, ref StringBuilder myString, ref Regex haltExpression, char closure = '\0')
         {
             int readerPosition = startPosition;
             string parseString = myString.ToString().Remove(0, startPosition);
@@ -127,6 +117,7 @@ namespace MUA
 
             if (!(closure == '\0' || parseString.Contains(closure)))
             {
+                // Warning!!! May fail when we have a \ at the end of mystring?
                 myString.Append(closure);
                 parseString = parseString.Insert(parseString.Length, closure.ToString(CultureInfo.InvariantCulture));
             }
@@ -147,9 +138,7 @@ namespace MUA
 
                 // PLEASE TEST THIS TEMPORARY SOLUTION LATER!
                 if (readerPosition == myString.Length)
-                {
                     return readerPosition - startPosition;
-                }
 
                 switch (parseString[0])
                 {
@@ -172,6 +161,62 @@ namespace MUA
 
                 readerPosition += len;
                 parseString = myString.ToString().Remove(0, readerPosition);
+            }
+
+            return readerPosition - startPosition;
+        }
+
+        /// <summary>
+        ///     A version of Parse that does not evaluate its contents.
+        /// </summary>
+        /// <param name="startPosition">Starting position of the full 'myString' ref where we begin evaluation.</param>
+        /// <param name="myString">The string reference to edit as we run through the parse-sequence.</param>
+        /// <param name="haltExpression">Where we halt and return to our previous caller.</param>
+        /// <param name="startExpression">Ensuring correctness of the halt-condition.</param>
+        /// <param name="closure">
+        ///     Forcefully add a closure for security purposes. This defines the required closing character of
+        ///     the 'haltExpression'.
+        /// </param>
+        /// <returns>Returns the integer representation of how many characters we've 'changed' of the 'myString'.</returns>
+        private int NoEvalParse(int startPosition, ref StringBuilder myString, ref Regex haltExpression,
+            ref Regex startExpression, char closure = '\0')
+        {
+            int readerPosition = startPosition;
+            var parseString = new StringBuilder(myString.ToString().Remove(0, startPosition));
+            int searchQty = 1;
+
+            while (searchQty > 0)
+            {
+                if (!haltExpression.IsMatch(parseString.ToString()))
+                {
+                    // We're missing )s. So we are just going to go straight to the end and call it quits.
+                    myString.Append(closure);
+                    return myString.Length - startPosition - 1;
+                }
+
+                // We are ensured to have at least 1 ) now. So the following regexp must match unless there is a \ at the end.
+                string caught = haltExpression.Match(parseString.ToString()).Groups[1].Value;
+
+                if (startExpression.IsMatch(caught))
+                {
+                    // We found a ( before the ), so we must find an extra )!
+                    int matchLen = startExpression.Match(caught).Groups[1].Length + 1;
+
+                    readerPosition += matchLen;
+                    searchQty++; // Add an extra one.
+                    parseString.Remove(0, matchLen);
+                }
+                else
+                {
+                    readerPosition += caught.Length;
+                    searchQty--;
+                    parseString.Remove(0, caught.Length);
+                    if (searchQty != 0)
+                    {
+                        readerPosition++;
+                        parseString.Remove(0, 1);
+                    }
+                }
             }
 
             return readerPosition - startPosition;
@@ -282,7 +327,7 @@ namespace MUA
         {
             Console.WriteLine("<Function: " + functionName + ">");
             int initialPosition = readerPosition;
-            var functionStack = new Stack<string>();
+            var functionStack = new Queue<string>();
 
             readerPosition += functionName.Length; // Function name and opening bracket.
             do
@@ -290,17 +335,19 @@ namespace MUA
                 // We should not be changing mystring until we get to the end of functionparse!!!
                 // We need to advance it to 'start' reading the argument one character further.
                 // As readerPosition is ',' or ')' or '(' guaranteed at this moment.
-                int arglength = this.Parse(++readerPosition, ref myString, ref this.specialCharFunEndHalt, ')', false);
-                functionStack.Push(myString.ToString().Substring(readerPosition, arglength));
+                int arglength = this.NoEvalParse(++readerPosition, ref myString, ref this.functionPlus,
+                    ref this.functionPlusStart, ')');
+                functionStack.Enqueue(myString.ToString().Substring(readerPosition, arglength));
                 readerPosition += arglength;
-            } 
-            while (myString[readerPosition] != ')');
+            } while (myString[readerPosition] != ')');
 
             myString.Remove(readerPosition, 1); // ')'
 
+            int i = 0;
             foreach (string argument in functionStack)
             {
-                Console.WriteLine("Argument: " + argument);
+                Console.WriteLine("Argument " + i + " for " + functionName + ": " + argument);
+                i++;
             }
 
             string functionoutput = "This was once function " + functionName + "!";
@@ -308,6 +355,22 @@ namespace MUA
             myString.Insert(initialPosition, functionoutput);
 
             return functionoutput.Length;
+        }
+
+        /// <summary>
+        ///     Indicates what type of string we are matching. Command-List, and standard Strings have different evaluation rules.
+        /// </summary>
+        private enum MatchState
+        {
+            /// <summary>
+            ///     Command List type matching.
+            /// </summary>
+            Commandlist,
+
+            /// <summary>
+            ///     String Type matching.
+            /// </summary>
+            String
         }
     }
 }

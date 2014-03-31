@@ -5,6 +5,8 @@
 // <author>Harry Cordewener</author>
 //-----------------------------------------------------------------------
 
+using System.Text.RegularExpressions;
+
 namespace MUA
 {
     using System;
@@ -26,6 +28,27 @@ namespace MUA
             var p = new Parser();
             Console.WriteLine(p.ToString());
 
+            List<String> testcases = new List<String>();
+            string testcase0 = @"fun(abc) fun3()";
+            string testcase1 = @"fun(\\\)\)) fun3()";
+            string testcase2 = @"fun(fun2(\)\\\(( fun3())";
+            string testcase3 = @"fun(fun2(() fun3()))";
+            testcases.Add(testcase0);
+            testcases.Add(testcase1);
+            testcases.Add(testcase2);
+            testcases.Add(testcase3);
+
+            Regex catchRegex = new Regex(@"^fun\(((?:[^()\\]|\\.|(?<o>\()|(?<-o>\)))+(?(o)(?!)))[\),](.*$)");
+
+            foreach (var testcase in testcases)
+            {
+                Console.WriteLine(catchRegex.Match(testcase).Groups[1]);
+                Console.WriteLine(catchRegex.Match(testcase).Groups[2]);
+                Console.WriteLine(catchRegex.Match(testcase).Groups[3]);
+                Console.WriteLine(catchRegex.Match(testcase).Groups[4]); 
+                Console.WriteLine("---");
+            }
+            
             Console.Read();
 
             const MarkupRule mar1 = MarkupRule.HiLight;
