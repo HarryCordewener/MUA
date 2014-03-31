@@ -62,7 +62,9 @@
     <Compile Include="String Handling\Markup.cs" />
     <Compile Include="String Handling\MarkupString.cs" />
     <Compile Include="String Handling\MarkupString_Copy.cs" />
-    <Compile Include="Inner Database\MObject.cs" />
+    <Compile Include="Inner Database\MObject.cs">
+      <ExcludeFromStyleCop>True</ExcludeFromStyleCop>
+    </Compile>
     <Compile Include="Evaluation Handling\Parser.cs" />
     <Compile Include="Evaluation Handling\Permission.cs" />
     <Compile Include="Inner Database\Player.cs" />

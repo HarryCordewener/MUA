@@ -5,15 +5,15 @@
 // <author>Harry Cordewener</author>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-
 namespace MUA
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Globalization;
+    using System.Linq;
+    using System.Text;
+    using System.Text.RegularExpressions;
+
     /// <summary>
     ///     The Parser takes a String and evaluates it according to the parsing rules.
     /// </summary>
@@ -33,7 +33,7 @@ namespace MUA
         ///     An alternate version of handling the functionPlus cases. To be implemented later.
         /// </summary>
         /// <remarks>
-        ///     Based on my StackOverflow Question here: http://stackoverflow.com/questions/22745729
+        ///     Based on my Stack Overflow Question here: http://StackOverflow.com/questions/22745729
         /// </remarks>
         private Regex catchRegex = new Regex(@"^fun\(((?:[^()\\]|\\.|(?<o>\()|(?<-o>\)))+(?(o)(?!)))([\),])(.*$)");
 
@@ -66,7 +66,7 @@ namespace MUA
         ///     Looks for special characters, while also looking for a ']' as an end condition.
         /// </summary>
         private Regex specialCharSquareEndHalt = new Regex(@"^(.*?)(?<SpecialChar>[\\\[{%\]])(.*$)");
-
+        
         /// <summary>
         ///     Initializes a new instance of the <see cref="Parser" /> class.
         /// </summary>
@@ -79,6 +79,22 @@ namespace MUA
             this.Parse(0, ref tester, ref this.specialChar);
             Console.WriteLine("Result:" + tester);
             Console.Read();
+        }
+
+        /// <summary>
+        ///     Indicates what type of string we are matching. Command-List, and standard Strings have different evaluation rules.
+        /// </summary>
+        private enum MatchState
+        {
+            /// <summary>
+            ///     Command List type matching.
+            /// </summary>
+            Commandlist,
+
+            /// <summary>
+            ///     String Type matching.
+            /// </summary>
+            String
         }
 
         /// <summary>
@@ -138,7 +154,9 @@ namespace MUA
 
                 // PLEASE TEST THIS TEMPORARY SOLUTION LATER!
                 if (readerPosition == myString.Length)
+                {
                     return readerPosition - startPosition;
+                }
 
                 switch (parseString[0])
                 {
@@ -178,8 +196,7 @@ namespace MUA
         ///     the 'haltExpression'.
         /// </param>
         /// <returns>Returns the integer representation of how many characters we've 'changed' of the 'myString'.</returns>
-        private int NoEvalParse(int startPosition, ref StringBuilder myString, ref Regex haltExpression,
-            ref Regex startExpression, char closure = '\0')
+        private int NoEvalParse(int startPosition, ref StringBuilder myString, ref Regex haltExpression, ref Regex startExpression, char closure = '\0')
         {
             int readerPosition = startPosition;
             var parseString = new StringBuilder(myString.ToString().Remove(0, startPosition));
@@ -335,11 +352,11 @@ namespace MUA
                 // We should not be changing mystring until we get to the end of functionparse!!!
                 // We need to advance it to 'start' reading the argument one character further.
                 // As readerPosition is ',' or ')' or '(' guaranteed at this moment.
-                int arglength = this.NoEvalParse(++readerPosition, ref myString, ref this.functionPlus,
-                    ref this.functionPlusStart, ')');
+                int arglength = this.NoEvalParse(++readerPosition, ref myString, ref this.functionPlus, ref this.functionPlusStart, ')');
                 functionStack.Enqueue(myString.ToString().Substring(readerPosition, arglength));
                 readerPosition += arglength;
-            } while (myString[readerPosition] != ')');
+            } 
+            while (myString[readerPosition] != ')');
 
             myString.Remove(readerPosition, 1); // ')'
 
@@ -355,22 +372,6 @@ namespace MUA
             myString.Insert(initialPosition, functionoutput);
 
             return functionoutput.Length;
-        }
-
-        /// <summary>
-        ///     Indicates what type of string we are matching. Command-List, and standard Strings have different evaluation rules.
-        /// </summary>
-        private enum MatchState
-        {
-            /// <summary>
-            ///     Command List type matching.
-            /// </summary>
-            Commandlist,
-
-            /// <summary>
-            ///     String Type matching.
-            /// </summary>
-            String
         }
     }
 }

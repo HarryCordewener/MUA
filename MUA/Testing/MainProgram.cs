@@ -5,13 +5,12 @@
 // <author>Harry Cordewener</author>
 //-----------------------------------------------------------------------
 
-using System.Text.RegularExpressions;
-
 namespace MUA
 {
     using System;
     using System.Collections.Generic;
     using System.Text;
+    using System.Text.RegularExpressions;
 
     /// <summary>
     ///     The Main Program.
@@ -28,7 +27,7 @@ namespace MUA
             var p = new Parser();
             Console.WriteLine(p.ToString());
 
-            List<String> testcases = new List<String>();
+            List<string> testcases = new List<string>();
             string testcase0 = @"fun(abc) fun3()";
             string testcase1 = @"fun(\\\)\)) fun3()";
             string testcase2 = @"fun(fun2(\)\\\(( fun3())";
@@ -51,8 +50,8 @@ namespace MUA
             
             Console.Read();
 
-            const MarkupRule mar1 = MarkupRule.HiLight;
-            var mar1L = new HashSet<MarkupRule> { mar1 };
+            const MarkupRule Mar1 = MarkupRule.HiLight;
+            var mar1L = new HashSet<MarkupRule> { Mar1 };
             var root = new MarkupString();
             var test = new MarkupString(new Markup(mar1L));
             test.Insert("DOOD", 0);
