@@ -5,6 +5,8 @@
 // <author>Harry Cordewener</author>
 //-----------------------------------------------------------------------
 
+using System.Linq;
+
 namespace MUA
 {
     using System;
@@ -47,50 +49,89 @@ namespace MUA
                 Console.WriteLine(catchRegex.Match(testcase).Groups[4]); 
                 Console.WriteLine("---");
             }
-            
+
+            int targetPosition = 3;
+            List<int> stringWeight = new List<int>(){1,1,5};
+            int passedWeights = stringWeight.TakeWhile(val => (targetPosition -= val) >= 0).Count();
+
+
             Console.Read();
 
-            const MarkupRule Mar1 = MarkupRule.HiLight;
-            var mar1L = new HashSet<MarkupRule> { Mar1 };
-            var root = new MarkupString();
-            var test = new MarkupString(new Markup(mar1L));
-            test.Insert("DOOD", 0);
-            root.Insert("Omnomnom", 0);
-            root.Insert(test, 4);
-            Console.WriteLine(root.ToString());
-            root.Remove(3, 4);
-            Console.WriteLine(root.ToString());
+            const MarkupRule hiLite = MarkupRule.HiLight;
+            var hiLiteAsList = new HashSet<MarkupRule> { hiLite };
+            var testString1 = new MarkupString(new Markup(hiLiteAsList));
+            var testString2 = new MarkupString();
 
-            var test2 = new List<MarkupString>();
-            root.FlattenInto(ref test2);
+            /* ----------------------------------
+             *  Testing Ansi Insert and Remove
+             * ---------------------------------- */
+            Console.WriteLine("Inserting DOOD into HiLite markup string 1 at position 0.");
+            testString1.Insert("DOOD", 0);
+            Console.WriteLine("Inserting Omnomnom into markup string 2 at position 0.");
+            testString2.Insert("Omnomnom", 0);
+            Console.WriteLine("Inserting markup string 1 into markup string 2 at position 4.");
+            testString2.Insert(testString1, 4);
+            Console.WriteLine("Printing markup string 2: ");
+            Console.WriteLine(testString2.ToString());
+            Console.WriteLine("Removing 4 characters starting at position 3 from markup string 2.");
+            testString2.Remove(3, 4);
+            Console.WriteLine("Printing markup string 2: ");
+            Console.WriteLine(testString2.ToString());
+
+            /* ---------------------------------- 
+             *  Testing Ansi Flattening
+             * ---------------------------------- */
+            Console.WriteLine("Ansi Flattening Tests");
+            var testString3 = new List<MarkupString>();
+            testString2.FlattenInto(ref testString3);
+
+            Console.WriteLine("Flattening string 2 into string 3, and printing.");
+            Console.WriteLine(testString2.ToString());
 
             var sb2 = new StringBuilder();
-
-            foreach (MarkupString each in test2)
+            foreach (MarkupString each in testString3)
             {
                 sb2.Append(each.ToTestString());
             }
 
             Console.WriteLine(sb2.ToString());
-            Console.Read();
-            Console.Read();
+            Console.WriteLine("\n\n\n");
+            Console.ReadLine();
 
-            var root2 = new MarkupString(root, 2, 4);
-            Console.WriteLine(root2.ToString());
-            root2.Insert("Graaaa", 2);
-            root2.Replace(new MarkupString("IttyBittyKittyCommitty"), 3, 4);
-            root2.Replace(root, 4, 2);
-            test2.Clear();
+
+            Console.WriteLine("Creating string 4 from string 2 (" + testString2 + "), starting at position 2, length 4.");
+            var testString4 = new MarkupString(testString2, 2, 4);
+            Console.WriteLine(testString4.ToString());
+
+            Console.WriteLine("\nInserting 'Graaaa' into string 4 at position 2.");
+            testString4.Insert("Graaaa", 2);
+
+            Console.WriteLine("Printing test string 4");
+            Console.WriteLine(testString4);
+
+            Console.WriteLine("Replacing string 4 at position 3 for length 4 with 'IttyBittyKittyCommitty'");
+            testString4.Replace(new MarkupString("IttyBittyKittyCommitty"), 3, 4);
+            Console.WriteLine("Printing test string 4");
+            Console.WriteLine(testString4);
+
+            Console.WriteLine("Replacing string 4 at position 4 for length 2 with string 2 (" + testString2 + ")");
+            testString4.Replace(testString2, 4, 2);
+            Console.WriteLine("Printing test string 4");
+            Console.WriteLine(testString4);
+            Console.ReadLine();
+
+            /* 
+            testString3.Clear();
 
             Console.WriteLine("---------");
-            Console.WriteLine(root2.ToTestString());
+            Console.WriteLine(testString4.ToTestString());
             Console.WriteLine("---------");
 
-            root2.FlattenInto(ref test2);
+            testString4.FlattenInto(ref testString3);
 
             sb2.Clear();
 
-            foreach (MarkupString each in test2)
+            foreach (MarkupString each in testString3)
             { 
                 sb2.Append(each.ToTestString());
             }
@@ -99,7 +140,7 @@ namespace MUA
             Console.WriteLine(sb2.ToString());
             Console.WriteLine("---------");
 
-            List<MarkupString> splitlist = root2.Split("itty");
+            List<MarkupString> splitlist = testString4.Split("itty");
 
             foreach (MarkupString word in splitlist)
             {
@@ -108,7 +149,7 @@ namespace MUA
 
             Console.Read();
             Console.Read();
-
+            */
             return 0;
         }
     }

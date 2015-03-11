@@ -87,8 +87,8 @@ namespace MUA
                 newMarkupString.beneathList = null;
                 newMarkupString.stringWeight = null;
                 newMarkupString.MyMarkup = null;
-                newMarkupString.markupString = new StringBuilder();
-                newMarkupString.markupString.Append(this.markupString);
+                newMarkupString.bareString = new StringBuilder();
+                newMarkupString.bareString.Append(this.bareString);
                 return newMarkupString;
             }
 
@@ -98,7 +98,7 @@ namespace MUA
             newMarkupString.MyMarkup = new Markup(this.MyMarkup);
             foreach (MarkupString mySubMarkupString in this.beneathList)
             {
-                newMarkupString.markupString = null;
+                newMarkupString.bareString = null;
                 var thisOne = new MarkupString();
                 newMarkupString.beneathList.Add(mySubMarkupString.CopyInto(thisOne));
                 newMarkupString.stringWeight.Add(thisOne.Weight());
@@ -114,7 +114,7 @@ namespace MUA
         /// <returns>A string representation of this MarkupString element only.</returns>
         public string ToSurfaceString()
         {
-            return this.IsString() ? this.markupString.ToString() : this.MyMarkup.ToString();
+            return this.IsString() ? this.bareString.ToString() : this.MyMarkup.ToString();
         }
 
         /// <summary>
@@ -125,7 +125,7 @@ namespace MUA
         {
             if (this.IsString())
             {
-                return this.markupString.ToString();
+                return this.bareString.ToString();
             }
 
             var result = new StringBuilder();
@@ -166,14 +166,14 @@ namespace MUA
                 newMarkupString.MyMarkup = null;
                 newMarkupString.beneathList = null;
                 newMarkupString.stringWeight = null;
-                newMarkupString.markupString = new StringBuilder(this.markupString.ToString().Substring(position, length));
+                newMarkupString.bareString = new StringBuilder(this.bareString.ToString().Substring(position, length));
             }
             else
             {
                 newMarkupString.MyMarkup = new Markup(this.MyMarkup);
                 newMarkupString.beneathList = new List<MarkupString>();
                 newMarkupString.stringWeight = new List<int>();
-                newMarkupString.markupString = null;
+                newMarkupString.bareString = null;
 
                 // We can't do this in parallel. Must be done in-order.
                 foreach (MarkupString markupStringItem in this.beneathList)
@@ -252,7 +252,7 @@ namespace MUA
             else
             {
                 var myMarkupParent = new MarkupString(mup);
-                myMarkupParent.Insert(this.markupString.ToString(), 0);
+                myMarkupParent.Insert(this.bareString.ToString(), 0);
                 markupStringList.Add(myMarkupParent);
             }
         }
