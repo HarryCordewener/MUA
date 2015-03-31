@@ -85,10 +85,13 @@ namespace MUA.Server.TCP
             }
         }
 
+        /// <summary>
+        /// <todo>Look into the wide usage of the Metadata attribute. It needs to be centralized.</todo>
+        /// </summary>
         class Server
         {
             public readonly TCPServer server;
-            public string Metadata;
+            private string Metadata;
 
             public Server(IPAddress addr, Int32 port, string metadata, ref ClientList clients)
             {
@@ -118,9 +121,9 @@ namespace MUA.Server.TCP
         /// <todo>Rewrite this to use a configuration from XML or similar.</todo>
         /// </summary>
         /// <returns></returns>
-        private List<Server> getServers()
+        private List<Server> GetServers()
         {
-            Int32 port = 9090;
+            const int port = 9090;
             IPAddress localAddr = IPAddress.Parse("127.0.0.1");
             Server telnetServer = new Server(localAddr, port, "telnet", ref clients);
             return new List<Server> {telnetServer};
@@ -131,7 +134,7 @@ namespace MUA.Server.TCP
         /// </summary>
         public void Serve()
         {
-            servers = getServers();
+            servers = GetServers();
             foreach (var server in servers)
             {
                 server.server.Startup();
