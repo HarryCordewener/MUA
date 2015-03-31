@@ -25,12 +25,16 @@ namespace MUA.Server.TCP
         /// </summary>
         public class Client
         {
+            public Byte[] Bytes;
+            public int BytePtr;
             public TcpClient client;
             public string Metadata;
             public Dictionary<String,String> KeyValuePairs; 
 
             public Client(TcpClient client, string metadata)
             {
+                Bytes = new Byte[2097152]; // Send buffer, for Windows connects etc.
+                BytePtr = 0; // Assists with the buffer, pointing at our location.
                 this.client = client;
                 Metadata = metadata;
                 KeyValuePairs = new Dictionary<string, string>();

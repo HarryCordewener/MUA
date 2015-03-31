@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace MUA.Server.TCP.Telnet
@@ -301,13 +302,13 @@ namespace MUA.Server.TCP.Telnet
                     }
 
                     // Loop to receive all the data sent by the client. 
-                    while ((i = stream.Read(bytes, 0, bytes.Length)) != 0)
+                    while ((i = stream.Read(client.Bytes, client.BytePtr, client.Bytes.Length-client.BytePtr)) != 0)
                     {
-                        negstart = 0;
+                        negstart = client.BytePtr;
                         // If the first character is telnet IAC, and it is not an escaped char 255...
-                        if (i > 1 && bytes[0] == 255 && bytes[1] != 255)
+                        if (i > 1 && client.Bytes[0] == 255 && client.Bytes[1] != 255)
                         {
-                            negstart = Negociate(ref client, ref bytes, i);
+                            negstart = Negociate(ref client, ref client.Bytes, i);
                             Console.WriteLine("Negociation was {0} characters of {1} bytes.", negstart, i);
                             if (negstart >= i)
                             {
@@ -321,12 +322,12 @@ namespace MUA.Server.TCP.Telnet
 
                         for (var j = 0; j < i; j++)
                         {
-                            bytesgotten.Append(bytes[j]);
+                            bytesgotten.Append(client.Bytes[j]);
                             bytesgotten.Append(" ");
                         }
 
                         // Translate data bytes to a ASCII string.
-                        data = Encoding.ASCII.GetString(bytes, negstart, i - negstart);
+                        data = Encoding.ASCII.GetString(client.Bytes, negstart, i - negstart);
                         Console.WriteLine("Received: {0} AKA {1}", data, bytesgotten);
 
                         // Process the data sent by the client.
@@ -335,8 +336,19 @@ namespace MUA.Server.TCP.Telnet
                         var msg = Encoding.ASCII.GetBytes(data);
 
                         // Send back a response.
-                        stream.Write(msg, 0, msg.Length);
-                        Console.WriteLine("Sent: {0}", data);
+                        // stream.Write(msg, 0, msg.Length);
+                        // Console.WriteLine("Sent: {0}", data);
+                        if ( i > 2 && client.BytePtr > 2 )
+                        {
+                            if((client.Bytes[client.BytePtr - 1] == (byte) NegociationOptions.NEWLINE
+                             && client.Bytes[client.BytePtr] == (byte) NegociationOptions.CR) ||
+                            (client.Bytes[client.BytePtr - 1] == (byte) NegociationOptions.CR
+                             && client.Bytes[client.BytePtr] == (byte) NegociationOptions.NEWLINE))
+                            {
+                                // client.Bytes.Initialize();
+                                client.BytePtr = 0;
+                            }
+                        }
                     }
 
                     // Shutdown and end connection
@@ -374,6 +386,8 @@ namespace MUA.Server.TCP.Telnet
             SE = 240,
             AYT = 246,
             LINEMODE = 34,
+            NEWLINE = 10,
+            CR = 13,
             SGA = 3,
             // Charset Options
             CHARSET = 42,
