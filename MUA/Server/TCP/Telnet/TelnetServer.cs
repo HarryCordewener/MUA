@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace MUA.Server.TCP.Telnet
@@ -23,9 +22,9 @@ namespace MUA.Server.TCP.Telnet
         }
 
         /// <summary>
-        ///     This code is here to handle negociation, and storing the negociation information
+        ///     This code is here to handle Negotiation, and storing the Negotiation information
         ///     on the client object using its KeyValuePair storage.
-        ///     WARNING! This code assumes that negociation is clean, and does not fail.
+        ///     WARNING! This code assumes that Negotiation is clean, and does not fail.
         ///     This really should be written in the form of a state-machine.
         ///     But as this is just a proof of concept, this will do for now.
         ///     <todo>
@@ -40,69 +39,69 @@ namespace MUA.Server.TCP.Telnet
         private int Negociate(ref TCPInitializer.Client client, ref Byte[] bytes, int length)
         {
             int i;
-            Console.WriteLine("NEGOCIATION!");
+            Console.WriteLine("Negotiation!");
             var notes = new List<string>();
             var stream = client.client.GetStream();
 
             for (i = 0; i < length; i++)
             {
                 /*
-                 *  WILL NEGOCIATION
+                 *  WILL Negotiation
                  */
-                if (bytes[i] == (byte) NegociationOptions.WILL)
+                if (bytes[i] == (byte) NegotiationOptions.WILL)
                 {
                     if (length > i + 1)
                     {
-                        if (bytes[i + 1] == (byte) NegociationOptions.NAWS)
+                        if (bytes[i + 1] == (byte) NegotiationOptions.NAWS)
                         {
                             // Do nothing. They will send us stuff.
                         }
-                        else if (bytes[i + 1] == (byte) NegociationOptions.NEWENVIRON)
+                        else if (bytes[i + 1] == (byte) NegotiationOptions.NEWENVIRON)
                         {
-                            Console.WriteLine("They have indicated WILL NEWENVIRON. Sending negociation string.");
+                            Console.WriteLine("They have indicated WILL NEWENVIRON. Sending Negotiation string.");
 
                             // We Send: IAC SB NEW-ENVIRON SEND IAC SE
-                            foreach (byte tosend in new List<NegociationOptions>
+                            foreach (byte tosend in new List<NegotiationOptions>
                             {
-                                NegociationOptions.IAC,
-                                NegociationOptions.SB,
-                                NegociationOptions.NEWENVIRON,
-                                NegociationOptions.SEND,
-                                NegociationOptions.IAC,
-                                NegociationOptions.SE
+                                NegotiationOptions.IAC,
+                                NegotiationOptions.SB,
+                                NegotiationOptions.NEWENVIRON,
+                                NegotiationOptions.SEND,
+                                NegotiationOptions.IAC,
+                                NegotiationOptions.SE
                             })
                             {
                                 stream.WriteByte(tosend);
                             }
                         }
-                        else if (bytes[i + 1] == (byte) NegociationOptions.TTYPE)
+                        else if (bytes[i + 1] == (byte) NegotiationOptions.TTYPE)
                         {
-                            Console.WriteLine("They have indicated WILL TTYPE. Sending negociation string.");
+                            Console.WriteLine("They have indicated WILL TTYPE. Sending Negotiation string.");
                             // We Send: IAC SB TERMINAL-TYPE SEND IAC SE
-                            foreach (byte tosend in new List<NegociationOptions>
+                            foreach (byte tosend in new List<NegotiationOptions>
                             {
-                                NegociationOptions.IAC,
-                                NegociationOptions.SB,
-                                NegociationOptions.TTYPE,
-                                NegociationOptions.SEND,
-                                NegociationOptions.IAC,
-                                NegociationOptions.SE
+                                NegotiationOptions.IAC,
+                                NegotiationOptions.SB,
+                                NegotiationOptions.TTYPE,
+                                NegotiationOptions.SEND,
+                                NegotiationOptions.IAC,
+                                NegotiationOptions.SE
                             })
                             {
                                 stream.WriteByte(tosend);
                             }
                         }
-                        else if (bytes[i + 1] == (byte) NegociationOptions.CHARSET)
+                        else if (bytes[i + 1] == (byte) NegotiationOptions.CHARSET)
                         {
                             Console.WriteLine("CHARSET NEG? (WILL). Let's try sending SB SEND");
                             var charsetsupport = Encoding.ASCII.GetBytes(";UTF-8;US-ASCII");
-                            stream.WriteByte((byte) NegociationOptions.IAC);
-                            stream.WriteByte((byte) NegociationOptions.SB);
-                            stream.WriteByte((byte) NegociationOptions.CHARSET);
-                            stream.WriteByte((byte) NegociationOptions.REQUEST);
+                            stream.WriteByte((byte) NegotiationOptions.IAC);
+                            stream.WriteByte((byte) NegotiationOptions.SB);
+                            stream.WriteByte((byte) NegotiationOptions.CHARSET);
+                            stream.WriteByte((byte) NegotiationOptions.REQUEST);
                             stream.Write(charsetsupport, 0, charsetsupport.Length);
-                            stream.WriteByte((byte) NegociationOptions.IAC);
-                            stream.WriteByte((byte) NegociationOptions.SE);
+                            stream.WriteByte((byte) NegotiationOptions.IAC);
+                            stream.WriteByte((byte) NegotiationOptions.SE);
                         }
                         else
                         {
@@ -114,19 +113,19 @@ namespace MUA.Server.TCP.Telnet
                 }
 
                 /*
-                 *  SUB NEGOCIATION - THIS LARGELY IS US INTERPRETING INCOMING NEGOCIATION
+                 *  SUB Negotiation - THIS LARGELY IS US INTERPRETING INCOMING Negotiation
                  */
-                else if (bytes[i] == (byte) NegociationOptions.SB)
+                else if (bytes[i] == (byte) NegotiationOptions.SB)
                 {
-                    // Begin Subnegociation - this comes after an IAC
-                    // After this, everything is negociation!
+                    // Begin SubNegotiation - this comes after an IAC
+                    // After this, everything is Negotiation!
 
                     if (length > i + 1)
                     {
                         /*
-                         *  NAWS NEGOCIATION
+                         *  NAWS Negotiation
                          */
-                        if (bytes[i + 1] == (byte) NegociationOptions.NAWS && length > i + 7)
+                        if (bytes[i + 1] == (byte) NegotiationOptions.NAWS && length > i + 7)
                         {
                             // We really should move this code to the Client creation.
                             // A client should always have these two. 
@@ -138,41 +137,41 @@ namespace MUA.Server.TCP.Telnet
                             // We are expecting: 
                             // IS <INT as Width> IS <INT as Height>
                             // Then IAC SE
-                            if (bytes[i + 2] != (byte) NegociationOptions.IS) break;
+                            if (bytes[i + 2] != (byte) NegotiationOptions.IS) break;
                             client.KeyValuePairs["WIDTH"] = bytes[i + 3].ToString();
-                            if (bytes[i + 4] != (byte) NegociationOptions.IS) break;
+                            if (bytes[i + 4] != (byte) NegotiationOptions.IS) break;
                             client.KeyValuePairs["HEIGHT"] = bytes[i + 5].ToString();
-                            if (bytes[i + 6] != (byte) NegociationOptions.IAC) break;
-                            if (bytes[i + 7] != (byte) NegociationOptions.SE) break;
+                            if (bytes[i + 6] != (byte) NegotiationOptions.IAC) break;
+                            if (bytes[i + 7] != (byte) NegotiationOptions.SE) break;
                             i = i + 7;
                             Console.WriteLine("The client has indicated WIDTH = " + client.KeyValuePairs["WIDTH"]
                                               + " HEIGHT = " + client.KeyValuePairs["HEIGHT"]);
                         }
 
                         /*
-                         *  ENVIRONMENT NEGOCIATION
+                         *  ENVIRONMENT Negotiation
                          */
-                        else if (bytes[i + 1] == (byte) NegociationOptions.NEWENVIRON)
+                        else if (bytes[i + 1] == (byte) NegotiationOptions.NEWENVIRON)
                         {
                         }
 
                         /*
-                         *  TERMINAL TYPE NEGOCIATION
+                         *  TERMINAL TYPE Negotiation
                          */
-                        else if (bytes[i + 1] == (byte) NegociationOptions.TTYPE)
+                        else if (bytes[i + 1] == (byte) NegotiationOptions.TTYPE)
                         {
                             // We are expecting: 
                             // IS < other things > IAC SE
                             // We CAN then send another request for a TTYPE, to enumerate, until we get a duplicate.
                             // At which point we stop!
-                            if (bytes[i + 2] != (byte) NegociationOptions.IS) break;
+                            if (bytes[i + 2] != (byte) NegotiationOptions.IS) break;
                             var TermType = new StringBuilder();
                             var completed = false;
                             for (i = i + 3; i < length; i++)
                             {
-                                if (bytes[i] == (byte) NegociationOptions.IAC &&
+                                if (bytes[i] == (byte) NegotiationOptions.IAC &&
                                     length > i + 1 &&
-                                    bytes[i + 1] == (byte) NegociationOptions.SE)
+                                    bytes[i + 1] == (byte) NegotiationOptions.SE)
                                 {
                                     if (!client.KeyValuePairs.ContainsKey("TERMTYPE"))
                                     {
@@ -199,49 +198,49 @@ namespace MUA.Server.TCP.Telnet
                         }
 
                         /*
-                         *  CHARACTER SET NEGOCIATION
+                         *  CHARACTER SET Negotiation
                          */
-                        else if (bytes[i + 1] == (byte) NegociationOptions.CHARSET)
+                        else if (bytes[i + 1] == (byte) NegotiationOptions.CHARSET)
                         {
-                            var charsetnegociation = new StringBuilder();
+                            var charsetNegotiation = new StringBuilder();
                             for (i = i + 1; i < length; i++)
                             {
-                                if (bytes[i] == (byte) NegociationOptions.IAC &&
+                                if (bytes[i] == (byte) NegotiationOptions.IAC &&
                                     length > i + 1 &&
-                                    bytes[i + 1] == (byte) NegociationOptions.SE)
+                                    bytes[i + 1] == (byte) NegotiationOptions.SE)
                                 {
-                                    Console.WriteLine(charsetnegociation);
+                                    Console.WriteLine(charsetNegotiation);
                                     i++;
                                     break;
                                 }
                                 switch (bytes[i])
                                 {
-                                    case (byte) NegociationOptions.ACCEPTED:
-                                        charsetnegociation.Append(NegociationOptions.ACCEPTED + " ");
+                                    case (byte) NegotiationOptions.ACCEPTED:
+                                        charsetNegotiation.Append(NegotiationOptions.ACCEPTED + " ");
                                         break;
-                                    case (byte) NegociationOptions.REQUEST:
-                                        charsetnegociation.Append(NegociationOptions.REQUEST + " ");
+                                    case (byte) NegotiationOptions.REQUEST:
+                                        charsetNegotiation.Append(NegotiationOptions.REQUEST + " ");
                                         break;
-                                    case (byte) NegociationOptions.CHARSET:
-                                        charsetnegociation.Append(NegociationOptions.CHARSET + " ");
+                                    case (byte) NegotiationOptions.CHARSET:
+                                        charsetNegotiation.Append(NegotiationOptions.CHARSET + " ");
                                         break;
-                                    case (byte) NegociationOptions.REJECTED:
-                                        charsetnegociation.Append(NegociationOptions.REJECTED + " ");
+                                    case (byte) NegotiationOptions.REJECTED:
+                                        charsetNegotiation.Append(NegotiationOptions.REJECTED + " ");
                                         break;
-                                    case (byte) NegociationOptions.TTABLE_ACK:
-                                        charsetnegociation.Append(NegociationOptions.TTABLE_ACK + " ");
+                                    case (byte) NegotiationOptions.TTABLE_ACK:
+                                        charsetNegotiation.Append(NegotiationOptions.TTABLE_ACK + " ");
                                         break;
-                                    case (byte) NegociationOptions.TTABLE_IS:
-                                        charsetnegociation.Append(NegociationOptions.TTABLE_IS + " ");
+                                    case (byte) NegotiationOptions.TTABLE_IS:
+                                        charsetNegotiation.Append(NegotiationOptions.TTABLE_IS + " ");
                                         break;
-                                    case (byte) NegociationOptions.TTABLE_NAK:
-                                        charsetnegociation.Append(NegociationOptions.TTABLE_NAK + " ");
+                                    case (byte) NegotiationOptions.TTABLE_NAK:
+                                        charsetNegotiation.Append(NegotiationOptions.TTABLE_NAK + " ");
                                         break;
-                                    case (byte) NegociationOptions.TTABLE_REJECTED:
-                                        charsetnegociation.Append(NegociationOptions.TTABLE_REJECTED + " ");
+                                    case (byte) NegotiationOptions.TTABLE_REJECTED:
+                                        charsetNegotiation.Append(NegotiationOptions.TTABLE_REJECTED + " ");
                                         break;
                                     default:
-                                        charsetnegociation.Append((char) bytes[i]);
+                                        charsetNegotiation.Append((char) bytes[i]);
                                         break;
                                 }
                             }
@@ -284,70 +283,70 @@ namespace MUA.Server.TCP.Telnet
                     var stream = client.client.GetStream();
 
                     int i;
-                    int negstart;
+                    int postNegotiationPtr;
 
                     // Let's tell it what we're willing to do here!
                     // We do NAWS, CHARSET, TTYPE and NEWENVIRON
                     foreach (var option in new[]
                     {
-                        NegociationOptions.NAWS,
-                        NegociationOptions.CHARSET,
-                        NegociationOptions.TTYPE,
-                        NegociationOptions.NEWENVIRON
+                        NegotiationOptions.NAWS,
+                        NegotiationOptions.CHARSET,
+                        NegotiationOptions.TTYPE,
+                        NegotiationOptions.NEWENVIRON
                     })
                     {
-                        stream.WriteByte((byte) NegociationOptions.IAC);
-                        stream.WriteByte((byte) NegociationOptions.DO);
+                        stream.WriteByte((byte) NegotiationOptions.IAC);
+                        stream.WriteByte((byte) NegotiationOptions.DO);
                         stream.WriteByte((byte) option);
                     }
 
                     // Loop to receive all the data sent by the client. 
-                    while ((i = stream.Read(client.Bytes, client.BytePtr, client.Bytes.Length-client.BytePtr)) != 0)
+                    while ((i = stream.Read(client.Bytes, client.BytePtr, client.Bytes.Length - client.BytePtr)) != 0)
                     {
-                        negstart = client.BytePtr;
+                        Console.WriteLine("Inserting at pointer position {0}", client.BytePtr);
+                        postNegotiationPtr = 0;
                         // If the first character is telnet IAC, and it is not an escaped char 255...
                         if (i > 1 && client.Bytes[0] == 255 && client.Bytes[1] != 255)
                         {
-                            negstart = Negociate(ref client, ref client.Bytes, i);
-                            Console.WriteLine("Negociation was {0} characters of {1} bytes.", negstart, i);
-                            if (negstart >= i)
+                            postNegotiationPtr = Negociate(ref client, ref client.Bytes, i);
+                            Console.WriteLine("Negotiation was {0} characters of {1} bytes.", postNegotiationPtr, i);
+                            if (postNegotiationPtr >= i)
                             {
-                                Console.WriteLine("This was pure negociation. Going to the next message.");
+                                Console.WriteLine("This was pure Negotiation. Going to the next message.");
                                 continue;
                             }
                         }
 
+                        var bytesReceived = new StringBuilder();
 
-                        var bytesgotten = new StringBuilder();
-
-                        for (var j = 0; j < i; j++)
+                        for (var j = 0; j < client.BytePtr + i; j++)
                         {
-                            bytesgotten.Append(client.Bytes[j]);
-                            bytesgotten.Append(" ");
+                            bytesReceived.Append(client.Bytes[j]);
+                            bytesReceived.Append(" ");
                         }
 
                         // Translate data bytes to a ASCII string.
-                        data = Encoding.ASCII.GetString(client.Bytes, negstart, i - negstart);
-                        Console.WriteLine("Received: {0} AKA {1}", data, bytesgotten);
+                        data = Encoding.ASCII.GetString(client.Bytes, postNegotiationPtr,
+                            client.BytePtr + i - postNegotiationPtr);
+                        Console.WriteLine("Received: {0} AKA {1}", data, bytesReceived);
 
                         // Process the data sent by the client.
                         data = data.ToUpper();
 
                         var msg = Encoding.ASCII.GetBytes(data);
 
+                        client.BytePtr += i;
                         // Send back a response.
                         // stream.Write(msg, 0, msg.Length);
                         // Console.WriteLine("Sent: {0}", data);
-                        if ( i > 2 && client.BytePtr > 2 )
+                        if (client.BytePtr >= 2 &&
+                            ((client.Bytes[client.BytePtr - 1 - 1] == (byte) NegotiationOptions.NEWLINE
+                              && client.Bytes[client.BytePtr - 1 ] == (byte)NegotiationOptions.CR) ||
+                             (client.Bytes[client.BytePtr - 1 - 1] == (byte)NegotiationOptions.CR
+                              && client.Bytes[client.BytePtr - 1 ] == (byte)NegotiationOptions.NEWLINE)))
                         {
-                            if((client.Bytes[client.BytePtr - 1] == (byte) NegociationOptions.NEWLINE
-                             && client.Bytes[client.BytePtr] == (byte) NegociationOptions.CR) ||
-                            (client.Bytes[client.BytePtr - 1] == (byte) NegociationOptions.CR
-                             && client.Bytes[client.BytePtr] == (byte) NegociationOptions.NEWLINE))
-                            {
-                                // client.Bytes.Initialize();
-                                client.BytePtr = 0;
-                            }
+                            // client.Bytes.Initialize();
+                            client.BytePtr = 0;
                         }
                     }
 
@@ -372,9 +371,9 @@ namespace MUA.Server.TCP.Telnet
         }
 
         /// <summary>
-        ///     The Negociation Options, for translating from human readable to decimal notation.
+        ///     The Negotiation Options, for translating from human readable to decimal notation.
         /// </summary>
-        private enum NegociationOptions
+        private enum NegotiationOptions
         {
             IAC = 255,
             WILL = 251,
