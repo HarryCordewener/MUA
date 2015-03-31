@@ -22,7 +22,8 @@ namespace MUA
         /// <summary>
         ///     Detects the start of a function call.
         /// </summary>
-        private readonly Regex functionNameAscii = new Regex(@"^((?<FunctionName>[a-z](?:\d|\w|_)+))\((.*$)");
+        private 
+            readonly Regex functionNameAscii = new Regex(@"^((?<FunctionName>[a-z](?:\d|\w|_)+))\((.*$)");
 
         /// <summary>
         ///     Looks for special characters, while not looking for a specific end condition.

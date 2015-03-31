@@ -6,6 +6,8 @@
 //-----------------------------------------------------------------------
 
 using System.Linq;
+using MUA.Server.TCP;
+using MUA.Server.TCP.Telnet;
 
 namespace MUA
 {
@@ -19,42 +21,12 @@ namespace MUA
     /// </summary>
     public class MainProgram
     {
+
         /// <summary>
-        ///     The main program runtime.
+        /// StringTest tests strings. To be converted into a UnitTest later.
         /// </summary>
-        /// <returns>Nothing is returned.</returns>
-        public static int Main()
+        public static void StringTest()
         {
-            // p used for testUnit.
-            var p = new Parser();
-            Console.WriteLine(p.ToString());
-
-            List<string> testcases = new List<string>();
-            string testcase0 = @"fun(abc) fun3()";
-            string testcase1 = @"fun(\\\)\)) fun3()";
-            string testcase2 = @"fun(fun2(\)\\\(( fun3())";
-            string testcase3 = @"fun(fun2(() fun3()))";
-            testcases.Add(testcase0);
-            testcases.Add(testcase1);
-            testcases.Add(testcase2);
-            testcases.Add(testcase3);
-
-            Regex catchRegex = new Regex(@"^fun\(((?:[^()\\]|\\.|(?<o>\()|(?<-o>\)))+(?(o)(?!)))[\),](.*$)");
-
-            foreach (var testcase in testcases)
-            {
-                Console.WriteLine(catchRegex.Match(testcase).Groups[1]);
-                Console.WriteLine(catchRegex.Match(testcase).Groups[2]);
-                Console.WriteLine(catchRegex.Match(testcase).Groups[3]);
-                Console.WriteLine(catchRegex.Match(testcase).Groups[4]); 
-                Console.WriteLine("---");
-            }
-
-            int targetPosition = 3;
-            List<int> stringWeight = new List<int>(){1,1,5};
-            int passedWeights = stringWeight.TakeWhile(val => (targetPosition -= val) >= 0).Count();
-
-
             Console.Read();
 
             const MarkupRule hiLite = MarkupRule.HiLight;
@@ -119,37 +91,47 @@ namespace MUA
             Console.WriteLine("Printing test string 4");
             Console.WriteLine(testString4);
             Console.ReadLine();
+        }
 
-            /* 
-            testString3.Clear();
+        /// <summary>
+        ///     The main program runtime.
+        /// </summary>
+        /// <returns>Nothing is returned.</returns>
+        public static int Main()
+        {
+            // p used for testUnit.
+            var p = new Parser();
+            Console.WriteLine(p.ToString());
 
-            Console.WriteLine("---------");
-            Console.WriteLine(testString4.ToTestString());
-            Console.WriteLine("---------");
+            List<string> testcases = new List<string>();
+            const string testcase0 = @"fun(abc) fun3()";
+            const string testcase1 = @"fun(\\\)\)) fun3()";
+            const string testcase2 = @"fun(fun2(\)\\\(( fun3())";
+            const string testcase3 = @"fun(fun2(() fun3()))";
+            const string testcase4 = @"fun(fun2(() fun3()))\";
+            testcases.Add(testcase0);
+            testcases.Add(testcase1);
+            testcases.Add(testcase2);
+            testcases.Add(testcase3);
+            testcases.Add(testcase4);
 
-            testString4.FlattenInto(ref testString3);
+            Regex catchRegex = new Regex(@"^fun\(((?:[^()\\]|\\.|(?<o>\()|(?<-o>\)))+(?(o)(?!)))[\),](.*$)");
 
-            sb2.Clear();
-
-            foreach (MarkupString each in testString3)
-            { 
-                sb2.Append(each.ToTestString());
-            }
-
-            Console.WriteLine("---------");
-            Console.WriteLine(sb2.ToString());
-            Console.WriteLine("---------");
-
-            List<MarkupString> splitlist = testString4.Split("itty");
-
-            foreach (MarkupString word in splitlist)
+            foreach (var testcase in testcases)
             {
-                Console.WriteLine(word.ToTestString());
+                Console.WriteLine(catchRegex.Match(testcase).Groups[1]);
+                Console.WriteLine(catchRegex.Match(testcase).Groups[2]);
+                Console.WriteLine(catchRegex.Match(testcase).Groups[3]);
+                Console.WriteLine(catchRegex.Match(testcase).Groups[4]); 
+                Console.WriteLine("---");
             }
 
-            Console.Read();
-            Console.Read();
-            */
+            // Console.Read();
+            Console.WriteLine("---");
+
+            TCPInitializer tcp = new TCPInitializer();
+            tcp.Serve();
+
             return 0;
         }
     }

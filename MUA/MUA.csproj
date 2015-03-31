@@ -58,6 +58,9 @@
     <Compile Include="Function Handling\FunctionParent.cs" />
     <Compile Include="Function Handling\FunctionResult.cs" />
     <Compile Include="Function Handling\IFunction.cs" />
+    <Compile Include="Server\TCP\TCPInitializer.cs" />
+    <Compile Include="Server\TCP\TCPServer.cs" />
+    <Compile Include="Server\TCP\Telnet\TelnetServer.cs" />
     <Compile Include="Testing\MainProgram.cs" />
     <Compile Include="String Handling\Markup.cs" />
     <Compile Include="String Handling\MarkupString.cs" />
@@ -89,6 +92,7 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

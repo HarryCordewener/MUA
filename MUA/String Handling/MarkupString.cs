@@ -5,12 +5,12 @@
 // <author>Harry Cordewener</author>
 //-----------------------------------------------------------------------
 
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
 namespace MUA
 {
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-
     /// <summary>
     ///     The MarkupString class, containing Markup and the lot. Awaiting implementation.
     ///     It must be noted that the MarkupString class can be in either or two states:
@@ -20,14 +20,14 @@ namespace MUA
     public partial class MarkupString
     {
         /// <summary>
-        ///     The MarkupStrings beneath this Markup Node. Null if this is not a Markup Node.
-        /// </summary>
-        private List<MarkupString> beneathList;
-
-        /// <summary>
         ///     The flat string contained within the leaf of a MarkupString, making this a String Node. null otherwise.
         /// </summary>
         private StringBuilder bareString;
+
+        /// <summary>
+        ///     The MarkupStrings beneath this Markup Node. Null if this is not a Markup Node.
+        /// </summary>
+        private List<MarkupString> beneathList;
 
         /// <summary>
         ///     Returns the total length of the strings beneath this node.
@@ -42,9 +42,9 @@ namespace MUA
         /// </summary>
         public MarkupString()
         {
-            this.beneathList = new List<MarkupString>();
-            this.stringWeight = new List<int>();
-            this.MyMarkup = new Markup();
+            beneathList = new List<MarkupString>();
+            stringWeight = new List<int>();
+            MyMarkup = new Markup();
         }
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace MUA
         /// <param name="value">The leaf's string value.</param>
         public MarkupString(string value)
         {
-            this.bareString = new StringBuilder(value);
+            bareString = new StringBuilder(value);
         }
 
         /// <summary>
@@ -69,13 +69,13 @@ namespace MUA
         /// <param name="markup">The Markup to use the left side of this MarkupString Node.</param>
         public MarkupString(Markup markup)
         {
-            this.MyMarkup = new Markup(markup); 
-            this.beneathList = new List<MarkupString>();
-            this.stringWeight = new List<int>();
+            MyMarkup = new Markup(markup);
+            beneathList = new List<MarkupString>();
+            stringWeight = new List<int>();
         }
 
         /// <summary>
-        ///     Gets or sets the markup for the elements below. 
+        ///     Gets or sets the markup for the elements below.
         ///     It inherits down. The Markup below us is 'mixed' and overrides.
         ///     We leave that to the Markup class.
         /// </summary>
@@ -124,12 +124,12 @@ namespace MUA
         /// <returns>The MarkupString itself.</returns>
         public MarkupString Insert(string insertString, int position)
         {
-            if (!this.IsString())
+            if (!IsString())
             {
-                int targetPosition = position;
+                var targetPosition = position;
 
                 // We need to find the way this string is now 'split', and leave the 'remainder' up to another call of InsertString.
-                int passedWeights = this.stringWeight.TakeWhile(val => (targetPosition -= val) >= 0).Count();
+                var passedWeights = stringWeight.TakeWhile(val => (targetPosition -= val) >= 0).Count();
 
                 if (targetPosition == 0)
                 {
@@ -138,16 +138,16 @@ namespace MUA
                     // If count is at 0, it's an insert.    
                     // If count is equal to stringWeight.Count, append at end.
                     // Otherwise, pass the new targetPosition to insert into the String.
-                    this.beneathList.Insert(passedWeights, new MarkupString(insertString));
-                    this.stringWeight.Insert(passedWeights, insertString.Length);
+                    beneathList.Insert(passedWeights, new MarkupString(insertString));
+                    stringWeight.Insert(passedWeights, insertString.Length);
                 }
                 else
                 {
                     // This is the adjustment for the 'last step reduction' error.
-                    targetPosition += this.stringWeight[passedWeights];
+                    targetPosition += stringWeight[passedWeights];
 
-                    this.beneathList[passedWeights].Insert(insertString, targetPosition);
-                    this.stringWeight[passedWeights] += insertString.Length;
+                    beneathList[passedWeights].Insert(insertString, targetPosition);
+                    stringWeight[passedWeights] += insertString.Length;
                 }
             }
             else
@@ -158,7 +158,7 @@ namespace MUA
                 // a = a.Insert(3, "-");
                 // Console.WriteLine(a);
                 // >> 012-3456
-                this.bareString = this.bareString.Insert(position, insertString);
+                bareString = bareString.Insert(position, insertString);
             }
 
             return this;
@@ -173,31 +173,31 @@ namespace MUA
         /// <returns>The MarkupString itself.</returns>
         public MarkupString Insert(MarkupString markupStringArg, int position)
         {
-            if (this.IsString())
+            if (IsString())
             {
-                this.beneathList = new List<MarkupString>();
-                this.stringWeight = new List<int>();
-                this.MyMarkup = new Markup(); // Blank Markup Transition
+                beneathList = new List<MarkupString>();
+                stringWeight = new List<int>();
+                MyMarkup = new Markup(); // Blank Markup Transition
 
-                string rightside = this.bareString.ToString().Substring(position);
-                string leftside = this.bareString.ToString().Substring(0, this.bareString.Length - rightside.Length);
+                var rightside = bareString.ToString().Substring(position);
+                var leftside = bareString.ToString().Substring(0, bareString.Length - rightside.Length);
 
-                this.beneathList.Add(new MarkupString(leftside));
-                this.beneathList.Add(new MarkupString(markupStringArg));
-                this.beneathList.Add(new MarkupString(rightside));
+                beneathList.Add(new MarkupString(leftside));
+                beneathList.Add(new MarkupString(markupStringArg));
+                beneathList.Add(new MarkupString(rightside));
 
-                this.bareString = null;
+                bareString = null;
 
-                this.stringWeight.Add(this.beneathList[0].Weight());
-                this.stringWeight.Add(this.beneathList[1].Weight());
-                this.stringWeight.Add(this.beneathList[2].Weight());
+                stringWeight.Add(beneathList[0].Weight());
+                stringWeight.Add(beneathList[1].Weight());
+                stringWeight.Add(beneathList[2].Weight());
             }
             else
             {
-                int targetPosition = position;
+                var targetPosition = position;
 
                 // We need to find the way this string is now 'split', and leave the 'remainder' up to another call of InsertString.
-                int passedWeights = this.stringWeight.TakeWhile(val => (targetPosition -= val) >= 0).Count();
+                var passedWeights = stringWeight.TakeWhile(val => (targetPosition -= val) >= 0).Count();
 
                 /* Warning: here, a position of 3 generates a targetPosition of -5 after noticing a weight 8. The position it needs to
                  *  go into is 3. But had it passed over a weight of 2, the targetposition would be '1' for the /next/ unit. Which is correct.
@@ -211,18 +211,18 @@ namespace MUA
                     // If count is at 0, it's an insert.
                     // If count is equal to stringWeight.Count, append at end.
                     // Otherwise, pass the new targetPosition to insert into the String.
-                    this.beneathList.Insert(passedWeights, markupStringArg);
-                    this.stringWeight.Insert(passedWeights, markupStringArg.Weight());
+                    beneathList.Insert(passedWeights, markupStringArg);
+                    stringWeight.Insert(passedWeights, markupStringArg.Weight());
                 }
                 else
                 {
                     // This is the adjustment for the 'last step reduction' error.
-                    targetPosition += this.stringWeight[passedWeights];
+                    targetPosition += stringWeight[passedWeights];
 
-                    this.beneathList[passedWeights].Insert(markupStringArg, targetPosition);
-                    this.stringWeight[passedWeights] += markupStringArg.Weight();
+                    beneathList[passedWeights].Insert(markupStringArg, targetPosition);
+                    stringWeight[passedWeights] += markupStringArg.Weight();
 
-                    if (!this.beneathList[passedWeights].MyMarkup.IsOnlyInherit())
+                    if (!beneathList[passedWeights].MyMarkup.IsOnlyInherit())
                     {
                         return this;
                     }
@@ -231,11 +231,11 @@ namespace MUA
                     // That is to say, we can put its individual beneathLists in the position where we had our old one.
                     // If the item below is not an empty (OnlyInherit) Markup, then it wasn't the item below that we did
                     // the final insert into.
-                    MarkupString reference = this.beneathList[passedWeights];
-                    this.beneathList.RemoveAt(passedWeights);
-                    this.stringWeight.RemoveAt(passedWeights);
-                    this.beneathList.InsertRange(passedWeights, reference.beneathList);
-                    this.stringWeight.InsertRange(passedWeights, reference.stringWeight);
+                    var reference = beneathList[passedWeights];
+                    beneathList.RemoveAt(passedWeights);
+                    stringWeight.RemoveAt(passedWeights);
+                    beneathList.InsertRange(passedWeights, reference.beneathList);
+                    stringWeight.InsertRange(passedWeights, reference.stringWeight);
                 }
             }
 
@@ -252,17 +252,17 @@ namespace MUA
         public MarkupString Remove(int position, int length)
         {
             var deletionIndexes = new List<int>();
-            if (this.IsString())
+            if (IsString())
             {
-                this.bareString.Remove(position, length);
+                bareString.Remove(position, length);
             }
             else
             {
                 // We can't do this in parallel. Must be done in-order.
-                foreach (MarkupString markupStringItem in this.beneathList)
+                foreach (var markupStringItem in beneathList)
                 {
                     // We do this, because keeping a count will get corrupted by deletions.
-                    int index = this.beneathList.IndexOf(markupStringItem);
+                    var index = beneathList.IndexOf(markupStringItem);
 
                     // We're done if we have nothing else to delete.
                     if (length <= 0)
@@ -278,13 +278,13 @@ namespace MUA
                         continue;
                     }
 
-                    int maxCut = markupStringItem.Weight() - position;
-                    int curCut = maxCut < length ? maxCut : length;
+                    var maxCut = markupStringItem.Weight() - position;
+                    var curCut = maxCut < length ? maxCut : length;
 
                     markupStringItem.Remove(position, curCut);
 
                     // Should this be done with a evalWeight() function or similar?
-                    this.stringWeight[index] = markupStringItem.Weight();
+                    stringWeight[index] = markupStringItem.Weight();
                     length -= curCut;
                     position = 0;
 
@@ -302,10 +302,10 @@ namespace MUA
                 deletionIndexes.Reverse();
 
                 // Begone! Evil empty nodes! You serve no purpose!
-                foreach (int index in deletionIndexes)
+                foreach (var index in deletionIndexes)
                 {
-                    this.beneathList.RemoveAt(index);
-                    this.stringWeight.RemoveAt(index);
+                    beneathList.RemoveAt(index);
+                    stringWeight.RemoveAt(index);
                 }
             }
 
@@ -319,8 +319,8 @@ namespace MUA
         /// <returns>The MarkupString itself.</returns>
         public MarkupString Append(MarkupString markupStringArg)
         {
-            this.beneathList.Add(markupStringArg);
-            this.stringWeight.Add(markupStringArg.Weight());
+            beneathList.Add(markupStringArg);
+            stringWeight.Add(markupStringArg.Weight());
             return this;
         }
 
@@ -334,8 +334,8 @@ namespace MUA
         public MarkupString Replace(MarkupString newMarkupString, int position, int length)
         {
             var replacement = new MarkupString(newMarkupString);
-            this.Insert(replacement, position);
-            this.Remove(position + replacement.Weight(), length);
+            Insert(replacement, position);
+            Remove(position + replacement.Weight(), length);
             return this;
         }
 
@@ -345,14 +345,14 @@ namespace MUA
         /// <returns>A string.</returns>
         public override string ToString()
         {
-            if (this.IsString())
+            if (IsString())
             {
-                return this.bareString.ToString();
+                return bareString.ToString();
             }
 
             var result = new StringBuilder();
 
-            foreach (MarkupString each in this.beneathList)
+            foreach (var each in beneathList)
             {
                 result.Append(each);
             }
@@ -367,17 +367,17 @@ namespace MUA
         /// <param name="length">The number of characters in the substring.</param>
         private void CutSubstring(int position, int length)
         {
-            if (this.IsString())
+            if (IsString())
             {
-                this.bareString.Remove(position + length, this.bareString.Length);
-                this.bareString.Remove(0, position);
+                bareString.Remove(position + length, bareString.Length);
+                bareString.Remove(0, position);
             }
             else
             {
                 // We can optimize this logic by not relying on our own coded Remove, and create a faster deletion logic specifically
                 // for CutSubstring. It's TODO.
-                this.Remove(position + length, this.Weight());
-                this.Remove(0, position);
+                Remove(position + length, Weight());
+                Remove(0, position);
             }
         }
 
@@ -387,9 +387,9 @@ namespace MUA
         /// <returns>An integer representation of how many characters are beneath this node.</returns>
         private int Weight()
         {
-            return this.stringWeight == null
-                ? this.bareString.Length
-                : this.stringWeight.Sum();
+            return stringWeight == null
+                ? bareString.Length
+                : stringWeight.Sum();
         }
 
         /// <summary>
@@ -398,7 +398,7 @@ namespace MUA
         /// <returns>Whether this is a string or not.</returns>
         private bool IsString()
         {
-            return this.bareString != null;
+            return bareString != null;
         }
     }
 }
