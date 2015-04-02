@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 
 namespace MUA.Server.TCP.Telnet
 {
@@ -48,15 +49,15 @@ namespace MUA.Server.TCP.Telnet
                 /*
                  *  WILL Negotiation
                  */
-                if (bytes[i] == (byte) NegotiationOptions.WILL)
+                if (bytes[i] == (byte)NegotiationOptions.WILL)
                 {
                     if (length > i + 1)
                     {
-                        if (bytes[i + 1] == (byte) NegotiationOptions.NAWS)
+                        if (bytes[i + 1] == (byte)NegotiationOptions.NAWS)
                         {
                             // Do nothing. They will send us stuff.
                         }
-                        else if (bytes[i + 1] == (byte) NegotiationOptions.NEWENVIRON)
+                        else if (bytes[i + 1] == (byte)NegotiationOptions.NEWENVIRON)
                         {
                             Console.WriteLine("They have indicated WILL NEWENVIRON. Sending Negotiation string.");
 
@@ -71,10 +72,10 @@ namespace MUA.Server.TCP.Telnet
                                 NegotiationOptions.SE
                             })
                             {
-                                stream.WriteByte((byte) tosend);
+                                stream.WriteByte((byte)tosend);
                             }
                         }
-                        else if (bytes[i + 1] == (byte) NegotiationOptions.TTYPE)
+                        else if (bytes[i + 1] == (byte)NegotiationOptions.TTYPE)
                         {
                             Console.WriteLine("They have indicated WILL TTYPE. Sending Negotiation string.");
                             // We Send: IAC SB TERMINAL-TYPE SEND IAC SE
@@ -88,20 +89,20 @@ namespace MUA.Server.TCP.Telnet
                                 NegotiationOptions.SE
                             })
                             {
-                                stream.WriteByte((byte) tosend);
+                                stream.WriteByte((byte)tosend);
                             }
                         }
-                        else if (bytes[i + 1] == (byte) NegotiationOptions.CHARSET)
+                        else if (bytes[i + 1] == (byte)NegotiationOptions.CHARSET)
                         {
                             Console.WriteLine("CHARSET NEG? (WILL). Let's try sending SB SEND");
-                            var charsetsupport = Encoding.ASCII.GetBytes(";UTF-8;US-ASCII");
-                            stream.WriteByte((byte) NegotiationOptions.IAC);
-                            stream.WriteByte((byte) NegotiationOptions.SB);
-                            stream.WriteByte((byte) NegotiationOptions.CHARSET);
-                            stream.WriteByte((byte) NegotiationOptions.REQUEST);
+                            var charsetsupport = Encoding.ASCII.GetBytes(";UTF-7;UTF-8;US-ASCII");
+                            stream.WriteByte((byte)NegotiationOptions.IAC);
+                            stream.WriteByte((byte)NegotiationOptions.SB);
+                            stream.WriteByte((byte)NegotiationOptions.CHARSET);
+                            stream.WriteByte((byte)NegotiationOptions.REQUEST);
                             stream.Write(charsetsupport, 0, charsetsupport.Length);
-                            stream.WriteByte((byte) NegotiationOptions.IAC);
-                            stream.WriteByte((byte) NegotiationOptions.SE);
+                            stream.WriteByte((byte)NegotiationOptions.IAC);
+                            stream.WriteByte((byte)NegotiationOptions.SE);
                         }
                         else
                         {
@@ -114,7 +115,7 @@ namespace MUA.Server.TCP.Telnet
                 /*
                  *  SUB Negotiation - THIS LARGELY IS US INTERPRETING INCOMING Negotiation
                  */
-                else if (bytes[i] == (byte) NegotiationOptions.SB)
+                else if (bytes[i] == (byte)NegotiationOptions.SB)
                 {
                     // Begin SubNegotiation - this comes after an IAC
                     // After this, everything is Negotiation!
@@ -124,7 +125,7 @@ namespace MUA.Server.TCP.Telnet
                         /*
                          *  NAWS Negotiation
                          */
-                        if (bytes[i + 1] == (byte) NegotiationOptions.NAWS && length > i + 7)
+                        if (bytes[i + 1] == (byte)NegotiationOptions.NAWS && length > i + 7)
                         {
                             // We really should move this code to the Client creation.
                             // A client should always have these two. 
@@ -136,12 +137,12 @@ namespace MUA.Server.TCP.Telnet
                             // We are expecting: 
                             // IS <INT as Width> IS <INT as Height>
                             // Then IAC SE
-                            if (bytes[i + 2] != (byte) NegotiationOptions.IS) break;
+                            if (bytes[i + 2] != (byte)NegotiationOptions.IS) break;
                             client.KeyValuePairs["WIDTH"] = bytes[i + 3].ToString();
-                            if (bytes[i + 4] != (byte) NegotiationOptions.IS) break;
+                            if (bytes[i + 4] != (byte)NegotiationOptions.IS) break;
                             client.KeyValuePairs["HEIGHT"] = bytes[i + 5].ToString();
-                            if (bytes[i + 6] != (byte) NegotiationOptions.IAC) break;
-                            if (bytes[i + 7] != (byte) NegotiationOptions.SE) break;
+                            if (bytes[i + 6] != (byte)NegotiationOptions.IAC) break;
+                            if (bytes[i + 7] != (byte)NegotiationOptions.SE) break;
                             i = i + 7;
                             Console.WriteLine("The client has indicated WIDTH = " + client.KeyValuePairs["WIDTH"]
                                               + " HEIGHT = " + client.KeyValuePairs["HEIGHT"]);
@@ -150,7 +151,7 @@ namespace MUA.Server.TCP.Telnet
                         /*
                          *  ENVIRONMENT Negotiation
                          */
-                        else if (bytes[i + 1] == (byte) NegotiationOptions.NEWENVIRON)
+                        else if (bytes[i + 1] == (byte)NegotiationOptions.NEWENVIRON)
                         {
                             // We don't know yet, just how to do this.
                         }
@@ -158,20 +159,20 @@ namespace MUA.Server.TCP.Telnet
                         /*
                          *  TERMINAL TYPE Negotiation
                          */
-                        else if (bytes[i + 1] == (byte) NegotiationOptions.TTYPE)
+                        else if (bytes[i + 1] == (byte)NegotiationOptions.TTYPE)
                         {
                             // We are expecting: 
                             // IS < other things > IAC SE
                             // We CAN then send another request for a TTYPE, to enumerate, until we get a duplicate.
                             // At which point we stop!
-                            if (bytes[i + 2] != (byte) NegotiationOptions.IS) break;
+                            if (bytes[i + 2] != (byte)NegotiationOptions.IS) break;
                             var termType = new StringBuilder();
                             var completed = false;
                             for (i = i + 3; i < length; i++)
                             {
-                                if (bytes[i] == (byte) NegotiationOptions.IAC &&
+                                if (bytes[i] == (byte)NegotiationOptions.IAC &&
                                     length > i + 1 &&
-                                    bytes[i + 1] == (byte) NegotiationOptions.SE)
+                                    bytes[i + 1] == (byte)NegotiationOptions.SE)
                                 {
                                     if (!client.KeyValuePairs.ContainsKey("TERMTYPE"))
                                     {
@@ -186,7 +187,7 @@ namespace MUA.Server.TCP.Telnet
                                 }
                                 else
                                 {
-                                    termType.Append((char) bytes[i]);
+                                    termType.Append((char)bytes[i]);
                                 }
                             }
                             if (!completed)
@@ -201,14 +202,14 @@ namespace MUA.Server.TCP.Telnet
                         /*
                          *  CHARACTER SET Negotiation
                          */
-                        else if (bytes[i + 1] == (byte) NegotiationOptions.CHARSET)
+                        else if (bytes[i + 1] == (byte)NegotiationOptions.CHARSET)
                         {
                             var charsetNegotiation = new StringBuilder();
                             for (i = i + 1; i < length; i++)
                             {
-                                if (bytes[i] == (byte) NegotiationOptions.IAC &&
+                                if (bytes[i] == (byte)NegotiationOptions.IAC &&
                                     length > i + 1 &&
-                                    bytes[i + 1] == (byte) NegotiationOptions.SE)
+                                    bytes[i + 1] == (byte)NegotiationOptions.SE)
                                 {
                                     Console.WriteLine(charsetNegotiation);
                                     i++;
@@ -216,32 +217,32 @@ namespace MUA.Server.TCP.Telnet
                                 }
                                 switch (bytes[i])
                                 {
-                                    case (byte) NegotiationOptions.ACCEPTED:
+                                    case (byte)NegotiationOptions.ACCEPTED:
                                         charsetNegotiation.Append(NegotiationOptions.ACCEPTED + " ");
                                         break;
-                                    case (byte) NegotiationOptions.REQUEST:
+                                    case (byte)NegotiationOptions.REQUEST:
                                         charsetNegotiation.Append(NegotiationOptions.REQUEST + " ");
                                         break;
-                                    case (byte) NegotiationOptions.CHARSET:
+                                    case (byte)NegotiationOptions.CHARSET:
                                         charsetNegotiation.Append(NegotiationOptions.CHARSET + " ");
                                         break;
-                                    case (byte) NegotiationOptions.REJECTED:
+                                    case (byte)NegotiationOptions.REJECTED:
                                         charsetNegotiation.Append(NegotiationOptions.REJECTED + " ");
                                         break;
-                                    case (byte) NegotiationOptions.TTABLE_ACK:
+                                    case (byte)NegotiationOptions.TTABLE_ACK:
                                         charsetNegotiation.Append(NegotiationOptions.TTABLE_ACK + " ");
                                         break;
-                                    case (byte) NegotiationOptions.TTABLE_IS:
+                                    case (byte)NegotiationOptions.TTABLE_IS:
                                         charsetNegotiation.Append(NegotiationOptions.TTABLE_IS + " ");
                                         break;
-                                    case (byte) NegotiationOptions.TTABLE_NAK:
+                                    case (byte)NegotiationOptions.TTABLE_NAK:
                                         charsetNegotiation.Append(NegotiationOptions.TTABLE_NAK + " ");
                                         break;
-                                    case (byte) NegotiationOptions.TTABLE_REJECTED:
+                                    case (byte)NegotiationOptions.TTABLE_REJECTED:
                                         charsetNegotiation.Append(NegotiationOptions.TTABLE_REJECTED + " ");
                                         break;
                                     default:
-                                        charsetNegotiation.Append((char) bytes[i]);
+                                        charsetNegotiation.Append((char)bytes[i]);
                                         break;
                                 }
                             }
@@ -257,143 +258,152 @@ namespace MUA.Server.TCP.Telnet
             return i;
         }
 
-        /// <summary>
-        ///     Startup the server.
-        ///     <todo>Convert to a Task?</todo>
-        /// </summary>
-        public override void Startup()
+        private void StreamHandler(object clientArg)
         {
-            try
-            {
-                Start();
-                // Buffer for reading data
-                var bytes = new Byte[MUASettings.Default.client_buffer_len * 2]; 
+            TCPInitializer.Client client = (TCPInitializer.Client)clientArg;
+            Console.WriteLine("Accepted a connection.");
 
-                // Enter the listening loop. 
-                while (true)
-                {
-                    Console.Write("Waiting for a connection... ");
-                    // Perform a blocking call to accept requests. 
-                    // You could also user server.AcceptSocket() here.
-                    var client = new TCPInitializer.Client(AcceptTcpClient(), Metadata);
-                    AllClients.Add(client);
+            // Get a stream object for reading and writing
+            var stream = client.client.GetStream();
 
-                    // Get a stream object for reading and writing
-                    var stream = client.client.GetStream();
 
-                    int i;
-                    int concat = 0;
+            int i;
+            int concat = 0;
+            var bytes = new Byte[MUASettings.Default.client_buffer_len * 2];
 
-                    // Let's tell it what we're willing to do here!
-                    // We do NAWS, CHARSET, TTYPE and NEWENVIRON
-                    foreach (var option in new[]
+            // Let's tell it what we're willing to do here!
+            // We do NAWS, CHARSET, TTYPE and NEWENVIRON
+            foreach (var option in new[]
                     {
                         NegotiationOptions.NAWS,
                         NegotiationOptions.CHARSET,
                         NegotiationOptions.TTYPE,
                         NegotiationOptions.NEWENVIRON
                     })
+            {
+                stream.WriteByte((byte)NegotiationOptions.IAC);
+                stream.WriteByte((byte)NegotiationOptions.DO);
+                stream.WriteByte((byte)option);
+            }
+
+            // Loop to receive all the data sent by the client. 
+            while ((i = stream.Read(bytes, concat, MUASettings.Default.client_buffer_len)) != 0)
+            {
+                int c = 0;
+                int postNegotiationPtr = 0;
+
+                // We refuse to believe IAC will appear anywhere BUT at the start of a sent.
+                // We also refuse to believe a single negociation string will be longer than the default client
+                // buffer length, which hopefully will be about 2 MB or more.
+                // If the first character is telnet IAC, and it is not an escaped char 255...
+                if (i > 1 && bytes[0] == 255 && bytes[1] != 255 && concat == 0)
+                {
+                    postNegotiationPtr = Negociate(ref client, ref bytes, i);
+                    Console.WriteLine("Negotiation was {0} characters of {1} bytes.", postNegotiationPtr, i);
+                    if (postNegotiationPtr > i)
                     {
-                        stream.WriteByte((byte) NegotiationOptions.IAC);
-                        stream.WriteByte((byte) NegotiationOptions.DO);
-                        stream.WriteByte((byte) option);
+                        for (int bte = 0; bte < i; bte++)
+                        {
+                            Console.Write(bytes[bte] + " ");
+                        }
+                        Console.WriteLine("\nWas received");
                     }
-
-                    // Loop to receive all the data sent by the client. 
-                    while ((i = stream.Read(bytes, concat, MUASettings.Default.client_buffer_len)) != 0)
+                    if (postNegotiationPtr >= i)
                     {
-                        int c = 0;
-                        int postNegotiationPtr = 0;
-
-                        // We refuse to believe IAC will appear anywhere BUT at the start of a sent.
-                        // We also refuse to believe a single negociation string will be longer than the default client
-                        // buffer length, which hopefully will be about 2 MB or more.
-                        // If the first character is telnet IAC, and it is not an escaped char 255...
-                        if (i > 1 && bytes[0] == 255 && bytes[1] != 255 && concat == 0)
-                        {
-                            postNegotiationPtr = Negociate(ref client, ref bytes, i);
-                            Console.WriteLine("Negotiation was {0} characters of {1} bytes.", postNegotiationPtr, i);
-                            if (postNegotiationPtr > i)
-                            {
-                                for (int bte = 0; bte < i; bte++)
-                                {
-                                    Console.Write(bytes[bte] + " ");
-                                }
-                                Console.WriteLine("\nWas received");
-                            }
-                            if (postNegotiationPtr >= i)
-                            {
-                                Console.WriteLine("This was pure Negotiation. Going to the next message.");
-                                continue;
-                            }
-                        }
-
-                        /*
-                         * We need a way here to 'confirm' how many we received and actually copied over.
-                         * But post-negociation, we can at least attempt to copy as much as we have.
-                         * We then look through 'bytes' for a \n\r or \r\n, so we can treat it as a 'send'
-                         * and clear our buffer? Or should we, upon reaching the max length, just assume that
-                         * was a send and toss the rest we received to the wayside?
-                         * The latter most certainly would be the easiest way to go about it!
-                         */
-                        for (var b = client.BytePtr; (b < client.Bytes.Length && c < i); b++, c++)
-                        {
-                            client.Bytes[b] = bytes[c + concat];
-                        }
-                        Console.WriteLine("Inserting at pointer position {0}", client.BytePtr);
-                        Console.WriteLine("We received {0} bytes, and recorded {1} of those.", i, c);
-
-
-                        var bytesReceived = new StringBuilder();
-
-                        for (var j = 0; (j < client.BytePtr + i && j < client.Bytes.Length); j++)
-                        {
-                            bytesReceived.Append(client.Bytes[j]);
-                            bytesReceived.Append(" ");
-                        }
-
-                        // Translate data bytes to a ASCII string.
-                        var data = Encoding.ASCII.GetString(client.Bytes, postNegotiationPtr,
-                            Math.Min(client.BytePtr + i - postNegotiationPtr, client.Bytes.Length));
-                        Console.WriteLine("Received: {0} AKA {1}", data, bytesReceived);
-
-                        var msg = Encoding.ASCII.GetBytes("Buffer cleared.");
-
-                        // Send back a response.
-                        // stream.Write(msg, 0, msg.Length);
-                        // Console.WriteLine("Sent: {0}", data);
-
-                        client.BytePtr = Math.Min(client.BytePtr + i, client.Bytes.Length);
-
-                        if (i + concat >= 2 &&
-                            ((bytes[i - 1 + concat] == (byte)NegotiationOptions.NEWLINE
-                              && bytes[i - 1 - 1 + concat] == (byte)NegotiationOptions.CR) ||
-                             (bytes[i - 1 + concat] == (byte)NegotiationOptions.CR
-                              && bytes[i - 1 - 1 + concat] == (byte)NegotiationOptions.NEWLINE)))
-                        {
-                            // client.Bytes.Initialize();
-                            client.BytePtr = 0;
-                            Console.WriteLine("Buffer cleared.");
-                            client.client.GetStream().Write(msg,0,msg.Length);
-                            /*
-                             * THIS IS WHERE WE MUST SEND THE INFORMATION TO THE PARSER!
-                             * WE QUEUE THE CLIENT BUFFER ONTO THE PARSE STACK.
-                             */
-                            concat = 0;
-                        }
-                        else
-                        {
-                            // We are not re-using, to make the code more readable. Concat has a very specific meaning.
-                            concat = client.Bytes.Length;
-                            for (int block = client.Bytes.Length; block < 2 * client.Bytes.Length; block++)
-                            {
-                                bytes[block - client.Bytes.Length] = bytes[block];
-                            }
-                        }
+                        Console.WriteLine("This was pure Negotiation. Going to the next message.");
+                        continue;
                     }
+                }
 
+                /*
+                 * We need a way here to 'confirm' how many we received and actually copied over.
+                 * But post-negociation, we can at least attempt to copy as much as we have.
+                 * We then look through 'bytes' for a \n\r or \r\n, so we can treat it as a 'send'
+                 * and clear our buffer? Or should we, upon reaching the max length, just assume that
+                 * was a send and toss the rest we received to the wayside?
+                 * The latter most certainly would be the easiest way to go about it!
+                 */
+                for (var b = client.BytePtr; (b < client.Bytes.Length && c < i); b++, c++)
+                {
+                    client.Bytes[b] = bytes[c + concat];
+                }
+                Console.WriteLine("Inserting at pointer position {0} of client {1}", 
+                    client.BytePtr, client.client.Client.RemoteEndPoint);
+                Console.WriteLine("We received {0} bytes, and recorded {1} of those.", i, c);
+
+
+                var bytesReceived = new StringBuilder();
+
+                for (var j = 0; (j < client.BytePtr + i && j < client.Bytes.Length); j++)
+                {
+                    bytesReceived.Append(client.Bytes[j]);
+                    bytesReceived.Append(" ");
+                }
+
+                // Translate data bytes to a ASCII string.
+                // Note! If we have negociated for UTF-8 etc, we should use that instead!
+                var data = Encoding.ASCII.GetString(client.Bytes, postNegotiationPtr,
+                    Math.Min(client.BytePtr + i - postNegotiationPtr, client.Bytes.Length));
+                Console.WriteLine("Received: {0} AKA {1}", data, bytesReceived);
+
+                var msg = Encoding.ASCII.GetBytes("Buffer cleared.\n\r");
+
+                // Send back a response.
+                // stream.Write(msg, 0, msg.Length);
+                // Console.WriteLine("Sent: {0}", data);
+
+                client.BytePtr = Math.Min(client.BytePtr + i, client.Bytes.Length);
+
+                if (i + concat >= 2 &&
+                    ((bytes[i - 1 + concat] == (byte)NegotiationOptions.NEWLINE
+                      && bytes[i - 1 - 1 + concat] == (byte)NegotiationOptions.CR) ||
+                     (bytes[i - 1 + concat] == (byte)NegotiationOptions.CR
+                      && bytes[i - 1 - 1 + concat] == (byte)NegotiationOptions.NEWLINE)))
+                {
+                    // client.Bytes.Initialize();
+                    client.BytePtr = 0;
+                    Console.WriteLine("Buffer cleared.");
+                    client.client.GetStream().Write(msg, 0, msg.Length);
+                    /*
+                     * THIS IS WHERE WE MUST SEND THE INFORMATION TO THE PARSER!
+                     * WE QUEUE THE CLIENT BUFFER ONTO THE PARSE STACK.
+                     */
+                    concat = 0;
+                }
+                else
+                {
+                    // We are not re-using, to make the code more readable. Concat has a very specific meaning.
+                    concat = client.Bytes.Length;
+                    for (int block = client.Bytes.Length; block < 2 * client.Bytes.Length; block++)
+                    {
+                        bytes[block - client.Bytes.Length] = bytes[block];
+                    }
+                }
+            }
+
+        }
+
+        private void ClientListener()
+        {
+            try
+            {
+                Start(); // Start listening.
+                while (true)
+                {
+                    // Buffer for reading data
+                    Console.WriteLine("Waiting for a connection... ");
+                    // Perform a blocking call to accept requests. 
+                    // You could also user server.AcceptSocket() here.
+
+                    var client = new TCPInitializer.Client(AcceptTcpClient(), Metadata);
+                    AllClients.Add(client);
+
+                    Thread clientThread = new Thread(StreamHandler);
+                    clientThread.Start(client);
+
+                    
                     // Shutdown and end connection
-                    AllClients.Disconnect(client);
+                    // AllClients.Disconnect(client);
                 }
             }
             catch (SocketException e)
@@ -406,10 +416,17 @@ namespace MUA.Server.TCP.Telnet
                 Stop();
                 AllClients.Disconnect(Metadata);
             }
+        }
 
-
-            Console.WriteLine("\nHit enter to continue...");
-            Console.Read();
+        /// <summary>
+        ///     Startup the server.
+        ///     <todo>Convert to a Task?</todo>
+        /// </summary>
+        public override Thread Startup()
+        {
+            Thread listenThread = new Thread(ClientListener);
+            listenThread.Start();
+            return listenThread;
         }
 
         /// <summary>
