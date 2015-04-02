@@ -62,6 +62,7 @@
     <Compile Include="Function Handling\FunctionParent.cs" />
     <Compile Include="Function Handling\FunctionResult.cs" />
     <Compile Include="Function Handling\IFunction.cs" />
+    <Compile Include="MUASettings.cs" />
     <Compile Include="MUASettings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>

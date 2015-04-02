@@ -183,7 +183,6 @@ namespace MUA.Server.TCP.Telnet
                                             client.KeyValuePairs["TERMTYPE"] = " " + termType;
                                     }
                                     completed = true;
-                                    i++;
                                 }
                                 else
                                 {
@@ -193,9 +192,10 @@ namespace MUA.Server.TCP.Telnet
                             if (!completed)
                             {
                                 Console.WriteLine("INCOMPLETE TERMTYPE! HOW DO WE RECOVER?!");
-                                return i; // Bail
+                                return 0; // Bail
                             }
                             Console.WriteLine("TERMTYPE: " + client.KeyValuePairs["TERMTYPE"] + " ");
+                            return i;
                         }
 
                         /*
@@ -282,7 +282,6 @@ namespace MUA.Server.TCP.Telnet
                     var stream = client.client.GetStream();
 
                     int i;
-                    int postNegotiationPtr;
                     int concat = 0;
 
                     // Let's tell it what we're willing to do here!
@@ -303,14 +302,25 @@ namespace MUA.Server.TCP.Telnet
                     // Loop to receive all the data sent by the client. 
                     while ((i = stream.Read(bytes, concat, MUASettings.Default.client_buffer_len)) != 0)
                     {
-                        var c = 0;
+                        int c = 0;
+                        int postNegotiationPtr = 0;
 
-                        postNegotiationPtr = 0;
+                        // We refuse to believe IAC will appear anywhere BUT at the start of a sent.
+                        // We also refuse to believe a single negociation string will be longer than the default client
+                        // buffer length, which hopefully will be about 2 MB or more.
                         // If the first character is telnet IAC, and it is not an escaped char 255...
                         if (i > 1 && bytes[0] == 255 && bytes[1] != 255 && concat == 0)
                         {
                             postNegotiationPtr = Negociate(ref client, ref bytes, i);
                             Console.WriteLine("Negotiation was {0} characters of {1} bytes.", postNegotiationPtr, i);
+                            if (postNegotiationPtr > i)
+                            {
+                                for (int bte = 0; bte < i; bte++)
+                                {
+                                    Console.Write(bytes[bte] + " ");
+                                }
+                                Console.WriteLine("\nWas received");
+                            }
                             if (postNegotiationPtr >= i)
                             {
                                 Console.WriteLine("This was pure Negotiation. Going to the next message.");
@@ -356,7 +366,7 @@ namespace MUA.Server.TCP.Telnet
                         client.BytePtr = Math.Min(client.BytePtr + i, client.Bytes.Length);
 
                         if (i + concat >= 2 &&
-                            ((bytes[i - 1 + concat] == (byte) NegotiationOptions.NEWLINE
+                            ((bytes[i - 1 + concat] == (byte)NegotiationOptions.NEWLINE
                               && bytes[i - 1 - 1 + concat] == (byte)NegotiationOptions.CR) ||
                              (bytes[i - 1 + concat] == (byte)NegotiationOptions.CR
                               && bytes[i - 1 - 1 + concat] == (byte)NegotiationOptions.NEWLINE)))

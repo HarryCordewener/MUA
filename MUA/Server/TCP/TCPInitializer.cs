@@ -128,8 +128,8 @@ namespace MUA.Server.TCP
         /// <returns></returns>
         private List<Server> GetServers()
         {
-            const int port = 9090;
-            IPAddress localAddr = IPAddress.Parse("127.0.0.1");
+            int port = MUASettings.Default.server_telnet_port;
+            IPAddress localAddr = IPAddress.Parse(MUASettings.Default.server_local_address);
             Server telnetServer = new Server(localAddr, port, "telnet", ref clients);
             return new List<Server> {telnetServer};
         }
