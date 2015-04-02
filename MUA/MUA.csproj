@@ -52,12 +52,21 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
+    <None Include="MUASettings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>MUASettings.Designer.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Function Handling\FunctionLibrary.cs" />
     <Compile Include="Function Handling\FunctionParent.cs" />
     <Compile Include="Function Handling\FunctionResult.cs" />
     <Compile Include="Function Handling\IFunction.cs" />
+    <Compile Include="MUASettings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>MUASettings.settings</DependentUpon>
+    </Compile>
     <Compile Include="Server\TCP\TCPInitializer.cs" />
     <Compile Include="Server\TCP\TCPServer.cs" />
     <Compile Include="Server\TCP\Telnet\TelnetServer.cs" />

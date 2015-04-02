@@ -33,7 +33,8 @@ namespace MUA.Server.TCP
 
             public Client(TcpClient client, string metadata)
             {
-                Bytes = new Byte[2097152]; // Send buffer, for Windows connects etc.
+                // Bytes = new Byte[2097152]; // Send buffer, for Windows connects etc.
+                Bytes = new Byte[MUASettings.Default.client_buffer_len]; // Send buffer, for Windows connects etc.
                 BytePtr = 0; // Assists with the buffer, pointing at our location.
                 this.client = client;
                 Metadata = metadata;
